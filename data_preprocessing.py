@@ -17,7 +17,6 @@ def convert_to_frames(file):
     success, image = vid.read()
     index = 0
     while success:
-        # TODO maybe scale down image 720p, is too large
         cv2.imwrite(file_directory + "frames" + "\\" + directory_name + "\\" + "frame%d.jpg" % index, image)
         success, image = vid.read();
         index += 1
@@ -28,4 +27,14 @@ def convert_folder(video_directory):
         path = os.path.join(video_directory, file)
         convert_to_frames(path)
 
-convert_folder("C:\\Uni\\computergrafik\\videos")
+
+def rename_frames_as_only_numbers(directory):
+    folder_list = [x[0] for x in os.walk(directory)]
+    folder_list = folder_list[1:]
+    print(folder_list)
+    for folder in folder_list:
+        for file in os.listdir(folder):
+            os.rename(folder + "\\" + file.title(), folder + "\\" + file.title()[5:])
+
+rename_frames_as_only_numbers("C:\\Uni\\computergrafik\\frames")
+#convert_folder("C:\\Uni\\computergrafik\\videos")
