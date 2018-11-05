@@ -5,3 +5,4 @@ Praktikum Computergrafik WS 18/19 Implementation of "Super SloMo: High Quality E
 ## Data
 
 Adobe 240 FPS DataSet available here : http://www.cs.ubc.ca/labs/imager/tr/2017/DeepVideoDeblurring/
+citation: [Su et al. Deep video deblurring for hand-held cameras. CVPR 2017]
