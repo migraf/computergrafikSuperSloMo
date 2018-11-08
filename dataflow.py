@@ -34,6 +34,8 @@ class IntermediateDataFlow(DataFlow):
 
 
     def __iter__(self):
+        # TODO scale images down
+
         print(1)
 
     def __len__(self):
