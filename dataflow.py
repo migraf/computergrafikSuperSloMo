@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import random
-import tensorpack
 import tensorflow as tf
 from tensorpack.dataflow.base import DataFlow
 import glob
