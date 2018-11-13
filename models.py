@@ -42,7 +42,7 @@ class FlowModel(ModelDesc):
         :return:
         """
         sizes = input.shape
-        out = tf.image.resize_bilinear(out, [sizes[1]*2, sizes[2]*2])
+        out = tf.image.resize_bilinear(input, [sizes[1]*2, sizes[2]*2])
         out = input + skip_conection
         out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides=1)
         out = tf.nn.leaky_relu(out, alpha=0.1)
@@ -156,7 +156,7 @@ class FlowModel(ModelDesc):
         return tf.losses.absolute_difference(frame, reconstruction)
 
     def perceptual_loss(self, reconstructions, frames):
-        # TODO load pretrained Image net VGG16 model and compute features
+        # TODO load pretrained Image net VGG16 model and compute features, mabye do in build graph
         # TODO check for NCHW oder NHWC
 
         return 0
