@@ -160,10 +160,25 @@ class FlowModel(ModelDesc):
         # TODO check for NCHW oder NHWC
 
         return 0
+    def warping_loss(self, I0, I1, F_0_1, F_1_0 ):
+        """
+        Warping loss between two images
+        TODO needs to be summed and normalized, how to use for intermediate frames?
+        :param I0:
+        :param I1:
+        :param F_0_1:
+        :param F_1_0:
+        :return:
+        """
+        return 0
+
+    def smoothness_loss(self, delta_F_0_1, delta_F_1_0):
+        return tf.losses.absolute_difference(delta_F_0_1, delta_F_1_0)
 
     def build_graph(self, *args):
-        # TODO how to get inputs
+        # TODO how to get inputs?
         # TODO compute the loss functions
+        # TODO how to handle intermediate frames?
 
         return 0
 
