@@ -3,7 +3,9 @@ import numpy as np
 import random
 import tensorflow as tf
 from tensorpack.dataflow.base import DataFlow
+import tensorpack.dataflow as dataflow
 import glob
+import cv2
 
 
 class IntermediateDataFlow(DataFlow):
@@ -33,15 +35,33 @@ class IntermediateDataFlow(DataFlow):
 
     def __iter__(self):
         # TODO scale images down?
-        # TODO convert to numpy/tensor
+        # TODO actually load images use cv2 and return array of images
         for image_list in self.file_list:
             image_tensors = []
-            for image in image_list:
+            for image_path in image_list:
                 # convert to tensor
-                image = tf.image.decode_jpeg(image)
+                image = cv2.imread(image_path)
                 # resize to 360 x 360
                 image_tensors.append(tf.image.resize_images(image, [360, 360]))
             yield image_tensors
 
     def __len__(self):
         return len(self.file_list)
+
+    def get_data(self):
+        data = []
+        for image_list in self.file_list:
+            image_tensors = []
+            for image_path in image_list:
+                # convert to tensor
+                image = cv2.imread(image_path)
+                # resize to 360 x 360
+                image_tensors.append(tf.image.resize_images(image, [360, 360]))
+            data.append(image_tensors)
+        return data
+
+
+
+df = IntermediateDataFlow("C:\\Uni\\computergrafik\\frames", 8)
+for dp in df:
+    print(dp)
