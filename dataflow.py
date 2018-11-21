@@ -9,8 +9,9 @@ import cv2
 
 
 class IntermediateDataFlow(DataFlow):
-    def __init__(self, train_folder, num_intermediate_frames):
+    def __init__(self, train_folder, num_intermediate_frames, size):
         self.file_list = self.create_train_files(train_folder, num_intermediate_frames)
+        self.image_size = size
 
     def create_train_files(self, train_folder, num_intermediate_frames):
         """
@@ -35,14 +36,15 @@ class IntermediateDataFlow(DataFlow):
 
     def __iter__(self):
         # TODO scale images down?
-        # TODO actually load images use cv2 and return array of images
         for image_list in self.file_list:
             image_tensors = []
             for image_path in image_list:
                 # convert to tensor
                 image = cv2.imread(image_path)
+                # normalize image
+                image /= 255
                 # resize to 360 x 360
-                image_tensors.append(tf.image.resize_images(image, [360, 360]))
+                image_tensors.append(tf.image.resize_images(image, [self.image_size, self.image_size]))
             yield image_tensors
 
     def __len__(self):
@@ -55,11 +57,13 @@ class IntermediateDataFlow(DataFlow):
             for image_path in image_list:
                 # convert to tensor
                 image = cv2.imread(image_path)
+                print(type(image))
                 # resize to 360 x 360
                 image_tensors.append(tf.image.resize_images(image, [360, 360]))
             data.append(image_tensors)
         return data
 
+# TODO create lmdb databse and save it somewhere, use this for trainign
 
 
 df = IntermediateDataFlow("C:\\Uni\\computergrafik\\frames", 8)
