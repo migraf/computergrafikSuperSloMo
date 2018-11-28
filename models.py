@@ -55,7 +55,7 @@ class FlowModel(ModelDesc):
 
 
 
-    def hierarchy_layer_down(self, input,  filter, kernel_size):
+    def hierarchy_layer_down(self, input,  filter, kernel_size, skip_connections):
         """
         One Hierarchy Layer for the Encoder of the U-Net architecture
         :param input:
@@ -69,6 +69,8 @@ class FlowModel(ModelDesc):
         out = tf.layers.conv2d(out, filters = filter, kernel_size = kernel_size, strides = 1,
                                data_format="channels_first", padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
+
+        skip_connections.append(out)
         out = tf.layers.average_pooling2d(out, 2, 2, data_format="channels_first")
 
         return out
@@ -89,14 +91,18 @@ class FlowModel(ModelDesc):
         print(skip_conection.shape)
         # transform image to NHWC
         input = tf.transpose(input, [0,2,3,1])
-        out = tf.image.resize_bilinear(input, [sizes[2]*2, sizes[3]*2])
+        out = tf.image.resize_images(input, [sizes[2]*2, sizes[3]*2])
         # TODO change whole thing to one format either NHWC or NCHW
         # transform back to NCHW
         out = tf.transpose(out, [0,3,1,2])
-        out = out + skip_conection
+
+        print("resize shape")
+        print(out.shape)
+
         out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides=1, data_format="channels_first",
                                padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
+        out = out + skip_conection
         out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides = 1, data_format="channels_first",
                                padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
@@ -116,20 +122,20 @@ class FlowModel(ModelDesc):
         input = tf.concat([I0, I1],axis=1)
         # U-Net Encoder
         # First Hierarchy Kernel Size 7
-        out = self.hierarchy_layer_down(input, 32, 7)
-        skip_connection.append(out)
+        out = self.hierarchy_layer_down(input, 32, 7, skip_connection)
+        #skip_connection.append(out)
         # Second Hierarchy Kernel Size 5
-        out = self.hierarchy_layer_down(out, 64, 5)
-        skip_connection.append(out)
+        out = self.hierarchy_layer_down(out, 64, 5, skip_connection)
+        #skip_connection.append(out)
         # Third Hierarchy layer
-        out = self.hierarchy_layer_down(out, 128, 3)
-        skip_connection.append(out)
+        out = self.hierarchy_layer_down(out, 128, 3, skip_connection)
+        #skip_connection.append(out)
         # Fourth
-        out = self.hierarchy_layer_down(out, 256, 3)
-        skip_connection.append(out)
+        out = self.hierarchy_layer_down(out, 256, 3, skip_connection)
+        #skip_connection.append(out)
         # Fifth
-        out = self.hierarchy_layer_down(out, 512, 3)
-        skip_connection.append(out)
+        out = self.hierarchy_layer_down(out, 512, 3, skip_connection)
+        #skip_connection.append(out)
         # Sixth Layer no average pooling
         out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides=1,
                                data_format="channels_first", padding="same")
@@ -137,8 +143,9 @@ class FlowModel(ModelDesc):
         out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1,
                                data_format="channels_first", padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
-        print("Final output shape")
-        print(out.shape)
+
+        for layer in skip_connection:
+            print(layer.shape)
 
 
         # Decoder
