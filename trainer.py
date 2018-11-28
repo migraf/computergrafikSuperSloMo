@@ -11,8 +11,8 @@ import argparse
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", help="directory containing the training images")
-    parser.add_argument("--image_size", help="size to scale the images to")
-    parser.add_argument("--num_frames", help="number of intermediate frames")
+    parser.add_argument("--image_size", help="size to scale the images to", default=512)
+    parser.add_argument("--num_frames", help="number of intermediate frames", default=8)
     # TODO what else do we need
 
     args = parser.parse_args()
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     logger.auto_set_dir()
 
     df = dataflow.IntermediateDataFlow(args.file_path, args.num_frames, args.image_size)
-    model = models.FlowModel()
+    model = models.FlowModel("FlowModel")
     # TODO is this needed/ just use defaults?
     config = TrainConfig(
         model=model,
@@ -29,5 +29,5 @@ if __name__ == "__main__":
         steps_per_epoch=df.size()
 
     )
-    trainer = TowerTrainer()
+    trainer = SimpleTrainer()
     launch_train_with_config(config, trainer)

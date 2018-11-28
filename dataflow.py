@@ -10,6 +10,7 @@ import cv2
 
 class IntermediateDataFlow(DataFlow):
     def __init__(self, train_folder, num_intermediate_frames, size):
+        print(train_folder)
         self.file_list = self.create_train_files(train_folder, num_intermediate_frames)
         self.image_size = size
 
@@ -41,10 +42,15 @@ class IntermediateDataFlow(DataFlow):
             for image_path in image_list:
                 # convert to tensor
                 image = cv2.imread(image_path)
+                print("image shape")
+                print(image.shape)
                 # normalize image
-                image /= 255
+                image = tf.divide(image, 255)
+                image = tf.expand_dims(image, 0)
                 # resize to 360 x 360
-                image_tensors.append(tf.image.resize_images(image, [self.image_size, self.image_size]))
+                # transpose to get NCHW format
+                image_tensors.append(tf.transpose(
+                    tf.image.resize_images(image, [self.image_size, self.image_size]), [0,3,1,2]))
             yield image_tensors
 
     def __len__(self):
@@ -55,17 +61,21 @@ class IntermediateDataFlow(DataFlow):
         for image_list in self.file_list:
             image_tensors = []
             for image_path in image_list:
-                # convert to tensor
                 image = cv2.imread(image_path)
-                print(type(image))
-                # resize to 360 x 360
-                image_tensors.append(tf.image.resize_images(image, [360, 360]))
+                print("image shape")
+                print(image.shape)
+                # normalize image
+                image = tf.divide(image, 255)
+                image = tf.expand_dims(image, 0)
+                # transpose to get NCHW format
+                image_tensors.append(tf.transpose(
+                    tf.image.resize_images(image, [self.image_size, self.image_size]), [0,3,1,2]))
             data.append(image_tensors)
         return data
 
-# TODO create lmdb databse and save it somewhere, use this for trainign
+# TODO create lmdb database and save it somewhere, use this for training
 
-
-df = IntermediateDataFlow("C:\\Uni\\computergrafik\\frames", 8)
-for dp in df:
-    print(dp)
+#
+# df = IntermediateDataFlow("C:\\Uni\\computergrafik\\frames", 8, 360)
+# for dp in df:
+#     print(dp)

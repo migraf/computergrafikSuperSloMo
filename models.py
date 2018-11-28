@@ -12,26 +12,46 @@ class FlowModel(ModelDesc):
     def __init__(self, name):
         self.name = name
 
-    def inputs(self, num_intermediate_frames):
-        return [tf.placeholder(tf.float32, (360,360), name="It_" + x) for x in range(num_intermediate_frames)]
+    def inputs(self):
+        return [tf.placeholder(tf.float32, (1,3,512,512), name="I_t_" + str(x)) for x in range(8)]
 
-    # TODO write backwards warping function with interpolations
 
     def warping(self, img, flow):
-        N = tf.shape(img)[0]
-        H = tf.shape(img)[1]
-        W = tf.shape(img)[2]
-        C = tf.shape(img)[3]
+        B = tf.shape(img)[0]
+        c = tf.shape(img)[1]
+        h = tf.shape(img)[2]
+        w = tf.shape(img)[3]
+
         # TODO is transpose really necessary why is this done?
-        img_flat = tf.reshape(tf.transpose(img, [0,2,3,1]), [-1, C])
+        img_flat = tf.reshape(tf.transpose(img, [0,2,3,1]), [-1, c])
         dx,dy = tf.unstack(flow, axis=1)
-        xf, yf = tf.meshgrid(tf.to_float(tf.range(W)), tf.to_float(tf.range(H)))
+        xf, yf = tf.meshgrid(tf.to_float(tf.range(w)), tf.to_float(tf.range(H)))
         xf = xf + dx
         yf = yf + dy
 
         alpha = tf.expand_dims(xf - tf.floor(xf), axis=1)
         beta = tf.expand_dims(yf - tf.floor(yf), axis=1)
+        xL = tf.clip_by_value(tf.cast(tf.floor(xf), dtype=tf.int32), 0, w - 1)
+        xR = tf.clip_by_value(tf.cast(tf.floor(xf) + 1, dtype=tf.int32), 0, w - 1)
+        yT = tf.clip_by_value(tf.cast(tf.floor(yf), dtype=tf.int32), 0, h - 1)
+        yB = tf.clip_by_value(tf.cast(tf.floor(yf) + 1, dtype=tf.int32), 0, h - 1)
 
+        batch_ids = tf.tile(tf.expand_dims(tf.expand_dims(tf.range(B), axis=-1), axis=-1), [1, h, w])
+
+        def get(y, x):
+            idx = tf.reshape(batch_ids * h * w + y * w + x, [-1])
+            idx = tf.cast(idx, tf.int32)
+            return tf.gather(img_flat, idx)
+
+        val = tf.zeros_like(alpha)
+        val += (1 - alpha) * (1 - beta) * tf.reshape(get(yT, xL), [-1, h, w, c])
+        val += (0 + alpha) * (1 - beta) * tf.reshape(get(yT, xR), [-1, h, w, c])
+        val += (1 - alpha) * (0 + beta) * tf.reshape(get(yB, xL), [-1, h, w, c])
+        val += (0 + alpha) * (0 + beta) * tf.reshape(get(yB, xR), [-1, h, w, c])
+
+        # we need to enforce the channel_dim known during compile-time here
+        shp = img.shape.as_list()
+        return tf.reshape(tf.transpose(val, [0, 3, 1, 2]), [-1, shp[1], h, w])
 
 
 
@@ -43,12 +63,13 @@ class FlowModel(ModelDesc):
         :param kernel_size: for convolution
         :return:
         """
-        # TODO pad inputs?
-        out = tf.layers.conv2d(input, filters = filter, kernel_size = kernel_size, strides=1)
+        out = tf.layers.conv2d(input, filters = filter, kernel_size = kernel_size, strides=1,
+                               data_format="channels_first", padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.layers.conv2d(out, filters = filter, kernel_size = kernel_size, strides = 1)
+        out = tf.layers.conv2d(out, filters = filter, kernel_size = kernel_size, strides = 1,
+                               data_format="channels_first", padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.layers.average_pooling2d(out, 2, 2)
+        out = tf.layers.average_pooling2d(out, 2, 2, data_format="channels_first")
 
         return out
 
@@ -62,12 +83,22 @@ class FlowModel(ModelDesc):
         :return:
         """
         sizes = input.shape
-        out = tf.image.resize_bilinear(input, [sizes[1]*2, sizes[2]*2])
-        # TODO is this the correct way for skip connections, maybe concat
-        out = input + skip_conection
-        out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides=1)
+        print("input shape")
+        print(input.shape)
+        print("skip shape")
+        print(skip_conection.shape)
+        # transform image to NHWC
+        input = tf.transpose(input, [0,2,3,1])
+        out = tf.image.resize_bilinear(input, [sizes[2]*2, sizes[3]*2])
+        # TODO change whole thing to one format either NHWC or NCHW
+        # transform back to NCHW
+        out = tf.transpose(out, [0,3,1,2])
+        out = out + skip_conection
+        out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides=1, data_format="channels_first",
+                               padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides = 1)
+        out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides = 1, data_format="channels_first",
+                               padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
 
         return out
@@ -80,11 +111,10 @@ class FlowModel(ModelDesc):
         :param I1: image at time 1
         :return:
         """
+        # TODO change average pooling to happen after the conv/relu and add to skip connections beforehand
         skip_connection = []
-        input = tf.concat(I0, I1,axis=1)
-
+        input = tf.concat([I0, I1],axis=1)
         # U-Net Encoder
-
         # First Hierarchy Kernel Size 7
         out = self.hierarchy_layer_down(input, 32, 7)
         skip_connection.append(out)
@@ -101,10 +131,15 @@ class FlowModel(ModelDesc):
         out = self.hierarchy_layer_down(out, 512, 3)
         skip_connection.append(out)
         # Sixth Layer no average pooling
-        out = tf.layers.conv2d(input, filters = 512, kernel_size = 3, strides=1)
+        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides=1,
+                               data_format="channels_first", padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1)
+        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1,
+                               data_format="channels_first", padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
+        print("Final output shape")
+        print(out.shape)
+
 
         # Decoder
 
@@ -145,18 +180,23 @@ class FlowModel(ModelDesc):
         # U-Net Encoder
 
         # First Hierarchy Kernel Size 7
+        # size 512
         out = self.hierarchy_layer_down(input, 32, 7)
         skip_connections.append(out)
         # Second Hierarchy Kernel Size 5
+        # size 256
         out = self.hierarchy_layer_down(out, 64, 5)
         skip_connections.append(out)
         # Third Hierarchy layer
+        # size 128
         out = self.hierarchy_layer_down(out, 128, 3)
         skip_connections.append(out)
         # Fourth
+        # Size 64
         out = self.hierarchy_layer_down(out, 256, 3)
         skip_connections.append(out)
         # Fifth
+        # Size 32
         out = self.hierarchy_layer_down(out, 512, 3)
         skip_connections.append(out)
         # Sixth Layer no average pooling
@@ -174,8 +214,6 @@ class FlowModel(ModelDesc):
         out = self.hierarchy_layer_up(out, skip_connections[-4],  64)
         out = self.hierarchy_layer_up(out, skip_connections[-5],  32)
 
-        #TODO check dimensions
-        print(tf.shape(out))
         return out
 
     def simple_loss(self, reconstruction, frame):
@@ -220,7 +258,7 @@ class FlowModel(ModelDesc):
         # TODO how to handle intermediate frames?
         loss = 0
         # Add summary
-        add_moving_summary(loss)
+
         intermediate_images = []
         basic_flow_result = self.basic_flow(args[0], args[-1])
         # TODO is this the right way to get the flow from the basic flow net, indexes correct?
@@ -265,6 +303,8 @@ class FlowModel(ModelDesc):
 
                 # compute loss for intermediate image
                 loss += self.simple_loss(interpolated_image, args[it])
+
+        add_moving_summary(loss)
 
         return loss
 
