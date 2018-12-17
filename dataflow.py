@@ -42,15 +42,11 @@ class IntermediateDataFlow(DataFlow):
             for image_path in image_list:
                 # convert to tensor
                 image = cv2.imread(image_path)
-                print("image shape")
-                print(image.shape)
                 # normalize image
                 image = tf.divide(image, 255)
-                image = tf.expand_dims(image, 0)
-                # resize to 360 x 360
-                # transpose to get NCHW format
-                image_tensors.append(tf.transpose(
-                    tf.image.resize_images(image, [self.image_size, self.image_size]), [0,3,1,2]))
+                image = cv2.resize(image, (self.image_size, self.image_size))
+                image = np.expand_dims(image, 0)
+                image_tensors.append(image)
             yield image_tensors
 
     def __len__(self):
@@ -68,8 +64,8 @@ class IntermediateDataFlow(DataFlow):
                 image = tf.divide(image, 255)
                 image = tf.expand_dims(image, 0)
                 # transpose to get NCHW format
-                image_tensors.append(tf.transpose(
-                    tf.image.resize_images(image, [self.image_size, self.image_size]), [0,3,1,2]))
+                image_tensors.append(
+                    tf.image.resize_images(image, [self.image_size, self.image_size]))
             data.append(image_tensors)
         return data
 

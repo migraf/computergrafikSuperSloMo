@@ -13,7 +13,7 @@ class FlowModel(ModelDesc):
         self.name = name
 
     def inputs(self):
-        return [tf.placeholder(tf.float32, (1,3,512,512), name="I_t_" + str(x)) for x in range(8)]
+        return [tf.placeholder(tf.float32, (1,512,512,3), name="I_t_" + str(x)) for x in range(8)]
 
 
     def warping(self, img, flow):
@@ -22,10 +22,9 @@ class FlowModel(ModelDesc):
         h = tf.shape(img)[2]
         w = tf.shape(img)[3]
 
-        # TODO is transpose really necessary why is this done?
         img_flat = tf.reshape(tf.transpose(img, [0,2,3,1]), [-1, c])
         dx,dy = tf.unstack(flow, axis=1)
-        xf, yf = tf.meshgrid(tf.to_float(tf.range(w)), tf.to_float(tf.range(H)))
+        xf, yf = tf.meshgrid(tf.to_float(tf.range(w)), tf.to_float(tf.range(h)))
         xf = xf + dx
         yf = yf + dy
 
@@ -63,16 +62,14 @@ class FlowModel(ModelDesc):
         :param kernel_size: for convolution
         :return:
         """
-        out = tf.layers.conv2d(input, filters = filter, kernel_size = kernel_size, strides=1,
-                               data_format="channels_first", padding="same")
+        out = tf.layers.conv2d(input, filters = filter, kernel_size = kernel_size, strides=1, padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.layers.conv2d(out, filters = filter, kernel_size = kernel_size, strides = 1,
-                               data_format="channels_first", padding="same")
+        out = tf.layers.conv2d(out, filters = filter, kernel_size = kernel_size, strides = 1, padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
 
         skip_connections.append(out)
-        out = tf.layers.average_pooling2d(out, 2, 2, data_format="channels_first")
 
+        out = tf.layers.average_pooling2d(out, 2, 2)
         return out
 
     def hierarchy_layer_up(self, input, skip_conection, filter):
@@ -85,25 +82,15 @@ class FlowModel(ModelDesc):
         :return:
         """
         sizes = input.shape
-        print("input shape")
-        print(input.shape)
-        print("skip shape")
-        print(skip_conection.shape)
         # transform image to NHWC
-        input = tf.transpose(input, [0,2,3,1])
-        out = tf.image.resize_images(input, [sizes[2]*2, sizes[3]*2])
+        out = tf.image.resize_images(input, [sizes[1]*2, sizes[2]*2])
         # TODO change whole thing to one format either NHWC or NCHW
         # transform back to NCHW
-        out = tf.transpose(out, [0,3,1,2])
-
-        print("resize shape")
-        print(out.shape)
-
-        out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides=1, data_format="channels_first",
+        out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides=1,
                                padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = out + skip_conection
-        out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides = 1, data_format="channels_first",
+        out = tf.concat([out, skip_conection], axis=3)
+        out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides = 1,
                                padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
 
@@ -117,9 +104,8 @@ class FlowModel(ModelDesc):
         :param I1: image at time 1
         :return:
         """
-        # TODO change average pooling to happen after the conv/relu and add to skip connections beforehand
         skip_connection = []
-        input = tf.concat([I0, I1],axis=1)
+        input = tf.concat([I0, I1],axis=3)
         # U-Net Encoder
         # First Hierarchy Kernel Size 7
         out = self.hierarchy_layer_down(input, 32, 7, skip_connection)
@@ -137,15 +123,11 @@ class FlowModel(ModelDesc):
         out = self.hierarchy_layer_down(out, 512, 3, skip_connection)
         #skip_connection.append(out)
         # Sixth Layer no average pooling
-        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides=1,
-                               data_format="channels_first", padding="same")
+        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides=1, padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1,
-                               data_format="channels_first", padding="same")
+        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1, padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
 
-        for layer in skip_connection:
-            print(layer.shape)
 
 
         # Decoder
@@ -157,11 +139,12 @@ class FlowModel(ModelDesc):
         out = self.hierarchy_layer_up(out, skip_connection[-4],  64)
         out = self.hierarchy_layer_up(out, skip_connection[-5],  32)
 
-        # TODO how to know if the output has the right dimensions?
-        print(tf.shape(out))
+        # TODO can you just do this?
+
+        out = tf.layers.conv2d(out, filters=4, kernel_size=3, strides=1, padding="same")
+        out = tf.identity(out)
 
         return out
-
 
     def flow_interpolation(self, I_0, I_1, F_0_1, F_1_0, g_I1_F_t_1, g_I0_F_t_0, F_t_1, F_t_0):
         """
@@ -181,7 +164,7 @@ class FlowModel(ModelDesc):
 
         # concatenate inputs
 
-        input = tf.concat([I_0, I_1, F_0_1, F_1_0, g_I1_F_t_1, g_I0_F_t_0, F_t_1, F_t_0], axis=1)
+        input = tf.concat([I_0, I_1, F_0_1, F_1_0, g_I1_F_t_1, g_I0_F_t_0, F_t_1, F_t_0], axis=3 )
 
         # same u-net architecture as base flow network
         # U-Net Encoder
@@ -230,15 +213,15 @@ class FlowModel(ModelDesc):
         :param frame:
         :return:
         """
-        l1 = tf.losses.absolute_difference(frame, reconstruction)
-        l2 = tf.losses.mean_squared_error(frame, reconstruction)
-        ssim = tf.image.ssim(frame, reconstruction, max_val=1.0)
+        l1 = tf.reduce_mean(tf.abs(tf.subtract(frame, reconstruction)))
+        l2 = tf.reduce_mean(tf.squared_difference(frame, reconstruction))
+        ssim = tf.squeeze(tf.image.ssim(frame, reconstruction, max_val=1.0))
 
         return l1 + l2 + ssim
 
 
     def reconstruction_loss(self, reconstruction, frame):
-        return tf.losses.absolute_difference(frame, reconstruction)
+        return tf.reduce_mean(tf.abs(tf.subtract(frame, reconstruction)))
 
     def perceptual_loss(self, reconstructions, frames):
         # TODO load pretrained Image net VGG16 model and compute features, mabye do in build graph
@@ -261,55 +244,63 @@ class FlowModel(ModelDesc):
         return tf.losses.absolute_difference(delta_F_0_1, delta_F_1_0)
 
     def build_graph(self, *args):
-        # TODO compute the loss functions
-        # TODO how to handle intermediate frames?
         loss = 0
         # Add summary
 
         intermediate_images = []
         basic_flow_result = self.basic_flow(args[0], args[-1])
-        # TODO is this the right way to get the flow from the basic flow net, indexes correct?
-        F_0_1 = basic_flow_result[:, :2, :, :]
-        F_1_0 = basic_flow_result[:, 2:, :, :]
-        with tf.name_scope("loss basic flow"):
-            # loss for computed flow t0 -> t1 and t1 -> t0
 
-            loss += self.simple_loss(args[-1],self.warping(args[0], F_0_1))
-            loss += self.simple_loss(args[0], self.warping(args[-1], F_1_0))
+        # Multiply flow by scalar because it is normalized between 0 and 1
+        F_0_1 = tf.multiply(basic_flow_result[:, :, :, :2], 10)
+        F_1_0 = tf.multiply(basic_flow_result[:, :, :, 2:], 10)
+
+        # loss for computed flow t0 -> t1 and t1 -> t0
+        warped_image_0 = tf.contrib.image.dense_image_warp(args[-1], F_1_0)
+        warped_image_1 = tf.contrib.image.dense_image_warp(args[0], F_0_1)
 
 
-        with tf.name_scope("loss intermediate frames"):
-            # Iterate over intermediate frames
-            for it in range(1,8):
-                t = it/8
-                F_t_0 = -(1 - t)*t*F_0_1 + t ** 2 * F_1_0
-                F_t_1 = (1 - t)**2 *F_0_1 - t * (1- t) * F_1_0
+        loss += self.simple_loss(args[-1],warped_image_1)
+        loss += self.simple_loss(args[0], warped_image_0)
 
-                g_I0_F_t_0 = self.warping(args[0], F_t_0)
-                g_I1_F_t_0 = self.warping(args[-1], F_t_1)
+        warped_image_0_scaled = tf.multiply(warped_image_0, 255)
+        warped_image_1_scaled = tf.multiply(warped_image_1, 255)
 
-                interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
-                                                               g_I0_F_t_0, F_t_1, F_t_0 )
-                print(tf.shape(interpolation_result))
+        tf.summary.image("Warped Image t0", warped_image_0_scaled, max_outputs=5 )
+        tf.summary.image("warped Image t1", warped_image_1_scaled, max_outputs=5)
+        tf.summary.scalar("loss", loss)
 
-                # get results for visibility maps from interpolation result
-                F_t_0_net = interpolation_result[:,:2,:,:] + F_t_0
-                F_t_1_net = interpolation_result[:,2:4,:,:] + F_t_1
-                V_t_0 = tf.expand_dims(interpolation_result[:,4:,:,:], axis=1)
-                V_t_1 = 1 - V_t_0
-
-                g_I0_F_t_0_net = self.warping(args[0], F_t_0_net)
-                g_I1_F_t_0_net = self.warping(args[-1], F_t_1_net)
-
-                # normalization for visibility fields
-                norm_vis = (1- t) * V_t_0 + t*V_t_1
-
-                # calculate interpolated image and normalize
-                interpolated_image = (1-t)*V_t_0*g_I0_F_t_0_net + t * V_t_1 * g_I1_F_t_0_net
-                interpolated_image = interpolated_image/norm_vis
-
-                # compute loss for intermediate image
-                loss += self.simple_loss(interpolated_image, args[it])
+        # with tf.name_scope("loss_intermediate_frames"):
+        #     # Iterate over intermediate frames
+        #     for it in range(1,8):
+        #         t = it/8
+        #         F_t_0 = -(1 - t)*t*F_0_1 + t ** 2 * F_1_0
+        #         F_t_1 = (1 - t)**2 *F_0_1 - t * (1- t) * F_1_0
+        #
+        #         g_I0_F_t_0 = self.warping(args[0], F_t_0)
+        #         g_I1_F_t_0 = self.warping(args[-1], F_t_1)
+        #
+        #         interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
+        #                                                        g_I0_F_t_0, F_t_1, F_t_0 )
+        #         print(tf.shape(interpolation_result))
+        #
+        #         # get results for visibility maps from interpolation result
+        #         F_t_0_net = interpolation_result[:,:2,:,:] + F_t_0
+        #         F_t_1_net = interpolation_result[:,2:4,:,:] + F_t_1
+        #         V_t_0 = tf.expand_dims(interpolation_result[:,4:,:,:], axis=1)
+        #         V_t_1 = 1 - V_t_0
+        #
+        #         g_I0_F_t_0_net = self.warping(args[0], F_t_0_net)
+        #         g_I1_F_t_0_net = self.warping(args[-1], F_t_1_net)
+        #
+        #         # normalization for visibility fields
+        #         norm_vis = (1- t) * V_t_0 + t*V_t_1
+        #
+        #         # calculate interpolated image and normalize
+        #         interpolated_image = (1-t)*V_t_0*g_I0_F_t_0_net + t * V_t_1 * g_I1_F_t_0_net
+        #         interpolated_image = interpolated_image/norm_vis
+        #
+        #         # compute loss for intermediate image
+        #         loss += self.simple_loss(interpolated_image, args[it])
 
         add_moving_summary(loss)
 
