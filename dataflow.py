@@ -26,7 +26,6 @@ class IntermediateDataFlow(DataFlow):
         folder_list = [x[0] for x in os.walk(train_folder)]
 
         for folder in folder_list:
-            print("test")
             # print(glob.glob(folder + "\\" + "*.jpg"))
             # Sort list of filenames by number
             image_list = sorted(glob.glob(folder + "\\" + "*.jpg"), key=lambda x: int(x.split("\\")[-1].split(".")[0]))
@@ -38,12 +37,12 @@ class IntermediateDataFlow(DataFlow):
         return train_list
 
     def __iter__(self):
-        # TODO scale images down?
         for image_list in self.file_list:
             image_tensors = []
             for image_path in image_list:
                 # convert to tensor
                 image = cv2.imread(image_path)
+                print(image.shape)
                 # normalize image
                 image = tf.divide(image, 255)
                 image = cv2.resize(image, (self.image_size, self.image_size))
