@@ -4,6 +4,7 @@ import random
 import tensorflow as tf
 from tensorpack.dataflow.base import DataFlow
 import tensorpack.dataflow as dataflow
+from tensorpack.dataflow import *
 import glob
 import cv2
 
@@ -71,7 +72,6 @@ class IntermediateDataFlow(DataFlow):
 
 # TODO create lmdb database and save it somewhere, use this for training
 
-#
-# df = IntermediateDataFlow("C:\\Uni\\computergrafik\\frames", 8, 360)
-# for dp in df:
-#     print(dp)
+
+df = IntermediateDataFlow("C:\\Uni\\computergrafik\\frames", 8, 512)
+dftools.dump_dataflow_to_lmdb(df,"C:\\Uni\\computergrafik")
