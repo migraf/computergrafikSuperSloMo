@@ -13,6 +13,7 @@ class IntermediateDataFlow(DataFlow):
     def __init__(self, train_folder, num_intermediate_frames, size):
         print(train_folder)
         self.file_list = self.create_train_files(train_folder, num_intermediate_frames)
+        print("File list size: " + len(self.file_list))
         self.image_size = size
 
     def create_train_files(self, train_folder, num_intermediate_frames):
