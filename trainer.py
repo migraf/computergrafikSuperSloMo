@@ -22,6 +22,7 @@ if __name__ == "__main__":
     df = dataflow.IntermediateDataFlow(args.file_path, args.num_frames, args.image_size)
     print("Dataframe size")
     print(df.size())
+    print(df.__len__())
     model = models.FlowModel("FlowModel")
     # TODO is this needed/ just use defaults?
     config = TrainConfig(

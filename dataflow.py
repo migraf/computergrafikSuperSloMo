@@ -26,6 +26,7 @@ class IntermediateDataFlow(DataFlow):
         folder_list = [x[0] for x in os.walk(train_folder)]
 
         for folder in folder_list:
+            print("test")
             # print(glob.glob(folder + "\\" + "*.jpg"))
             # Sort list of filenames by number
             image_list = sorted(glob.glob(folder + "\\" + "*.jpg"), key=lambda x: int(x.split("\\")[-1].split(".")[0]))
@@ -74,4 +75,5 @@ class IntermediateDataFlow(DataFlow):
 
 
 # df = IntermediateDataFlow("C:\\Uni\\computergrafik\\frames", 8, 512)
+# print(df.__len__())
 # dftools.dump_dataflow_to_lmdb(df,"C:\\Uni\\computergrafik")
