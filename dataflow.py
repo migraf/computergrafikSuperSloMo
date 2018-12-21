@@ -31,7 +31,6 @@ class IntermediateDataFlow(DataFlow):
             # print(glob.glob(folder + "\\" + "*.jpg"))
             # Sort list of filenames by number
             image_list = sorted(glob.glob(folder + "/" + "*.Jpg"), key=lambda x: int(x.split("/")[-1].split(".")[0]))
-            print(image_list)
             for i in range(0, len(image_list), num_intermediate_frames):
                 intermed_frames = image_list[i: i + num_intermediate_frames]
                 if (len(intermed_frames) == 8):
@@ -45,7 +44,6 @@ class IntermediateDataFlow(DataFlow):
             for image_path in image_list:
                 # convert to tensor
                 image = cv2.imread(image_path)
-                print(image.shape)
                 # normalize image
                 image = tf.divide(image, 255)
                 image = cv2.resize(image, (self.image_size, self.image_size))

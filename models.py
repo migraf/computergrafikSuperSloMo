@@ -268,6 +268,7 @@ class FlowModel(ModelDesc):
         tf.summary.image("Warped Image t0", warped_image_0_scaled, max_outputs=5 )
         tf.summary.image("warped Image t1", warped_image_1_scaled, max_outputs=5)
         tf.summary.scalar("loss", loss)
+        print(loss)
 
         # with tf.name_scope("loss_intermediate_frames"):
         #     # Iterate over intermediate frames

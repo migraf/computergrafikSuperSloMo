@@ -29,7 +29,7 @@ if __name__ == "__main__":
         model=model,
         dataflow=df,
         max_epoch=10,
-        # callbacks= [ModelSaver()],
+        callbacks= [ModelSaver()],
         steps_per_epoch=df.size()
 
     )
