@@ -49,6 +49,7 @@ class IntermediateDataFlow(DataFlow):
                 image = cv2.resize(image, (self.image_size, self.image_size))
                 image = np.expand_dims(image, 0)
                 image_tensors.append(image)
+            print("New Images")
             yield image_tensors
 
     def __len__(self):
