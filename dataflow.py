@@ -88,4 +88,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     df = IntermediateDataFlow(args.file_path, 8, 512)
-    dftools.dump_dataflow_to_lmdb(args.lmdb_path)
+    print("Created Dataflow: Now creating lmdb at: " + args.lmdb_path)
+    dftools.dump_dataflow_to_lmdb(df, args.lmdb_path)
