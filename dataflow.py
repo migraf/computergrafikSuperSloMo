@@ -89,4 +89,4 @@ if __name__ == "__main__":
 
     df = IntermediateDataFlow(args.file_path, 8, 512)
     print("Created Dataflow: Now creating lmdb at: " + args.lmdb_path)
-    LMDBSerializer.save(df, args.lmdb_path)
+    LMDBSerializer.save(df, args.lmdb_path, 1000)
