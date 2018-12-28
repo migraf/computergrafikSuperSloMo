@@ -4,7 +4,7 @@ import random
 import tensorflow as tf
 from tensorpack.dataflow.base import DataFlow
 import tensorpack.dataflow as dataflow
-from tensorpack.dataflow import *
+from tensorpack.dataflow.serialize import LMDBSerializer
 import glob
 import cv2
 import argparse
@@ -89,4 +89,4 @@ if __name__ == "__main__":
 
     df = IntermediateDataFlow(args.file_path, 8, 512)
     print("Created Dataflow: Now creating lmdb at: " + args.lmdb_path)
-    dftools.dump_dataflow_to_lmdb(df, args.lmdb_path)
+    LMDBSerializer.save(df, args.lmdb_path)
