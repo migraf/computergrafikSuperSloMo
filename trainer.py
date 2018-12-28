@@ -6,11 +6,13 @@ from tensorpack.train import SingleCostTrainer
 import dataflow
 import models
 import argparse
+from tensorpack.dataflow.serialize import LMDBSerializer
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", help="directory containing the training images")
+    parser.add_argument("--lmdb_path", help="Path of the lmdb file")
     parser.add_argument("--image_size", help="size to scale the images to", default=512)
     parser.add_argument("--num_frames", help="number of intermediate frames", default=8)
     # TODO what else do we need
@@ -18,8 +20,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     logger.auto_set_dir()
-
-    df = dataflow.IntermediateDataFlow(args.file_path, args.num_frames, args.image_size)
+    if args.lmdb_path:
+        df = LMDBSerializer.load(args.lmdb_path, shuffle=False)
+    else:
+        df = dataflow.IntermediateDataFlow(args.file_path, args.num_frames, args.image_size)
     print("Dataframe size")
     print(df.size())
     print(df.__len__())
