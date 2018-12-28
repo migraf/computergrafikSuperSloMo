@@ -7,6 +7,7 @@ import tensorpack.dataflow as dataflow
 from tensorpack.dataflow import *
 import glob
 import cv2
+import argparse
 
 
 class IntermediateDataFlow(DataFlow):
@@ -78,3 +79,13 @@ class IntermediateDataFlow(DataFlow):
 # df = IntermediateDataFlow("C:\\Uni\\computergrafik\\frames", 8, 512)
 # print(df.__len__())
 # dftools.dump_dataflow_to_lmdb(df,"C:\\Uni\\computergrafik")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--file_path", help="path to the initial files")
+    parser.add_argument("--lmdb_path", help="Output path of the lmdb file")
+
+    args = parser.parse_args()
+
+    df = IntermediateDataFlow(args.file_path, 8, 512)
+    dftools.dump_dataflow_to_lmdb(args.lmdb_path)
