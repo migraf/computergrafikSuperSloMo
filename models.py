@@ -143,6 +143,7 @@ class FlowModel(ModelDesc):
 
         out = tf.layers.conv2d(out, filters=4, kernel_size=3, strides=1, padding="same")
         out = tf.identity(out)
+        print("Basic flow network created")
 
         return out
 
@@ -250,9 +251,14 @@ class FlowModel(ModelDesc):
         intermediate_images = []
         basic_flow_result = self.basic_flow(args[0], args[-1])
 
+        print(args[0].shape)
+
         # Multiply flow by scalar because it is normalized between 0 and 1
         F_0_1 = tf.multiply(basic_flow_result[:, :, :, :2], 10)
         F_1_0 = tf.multiply(basic_flow_result[:, :, :, 2:], 10)
+
+        tf.summary.image("Original Image 0", args[0], max_outputs=10)
+        tf.summary.image("Original Image 1", args[-1], max_outputs=10)
 
         # loss for computed flow t0 -> t1 and t1 -> t0
         warped_image_0 = tf.contrib.image.dense_image_warp(args[-1], F_1_0)
@@ -265,8 +271,8 @@ class FlowModel(ModelDesc):
         warped_image_0_scaled = tf.multiply(warped_image_0, 255)
         warped_image_1_scaled = tf.multiply(warped_image_1, 255)
 
-        tf.summary.image("Warped Image t0", warped_image_0_scaled, max_outputs=5 )
-        tf.summary.image("warped Image t1", warped_image_1_scaled, max_outputs=5)
+        tf.summary.image("Warped Image t0", warped_image_0_scaled, max_outputs=10 )
+        tf.summary.image("warped Image t1", warped_image_1_scaled, max_outputs=10)
         tf.summary.scalar("loss", loss)
         print(loss)
 
@@ -304,6 +310,7 @@ class FlowModel(ModelDesc):
         #         loss += self.simple_loss(interpolated_image, args[it])
 
         add_moving_summary(loss)
+        self.cost = loss
 
         return loss
 
