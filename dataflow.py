@@ -11,9 +11,10 @@ import argparse
 
 
 class IntermediateDataFlow(DataFlow):
-    def __init__(self, train_folder, num_intermediate_frames, size):
+    def __init__(self, train_folder, num_intermediate_frames, size, num_examples=None):
         print(train_folder)
         self.file_list = self.create_train_files(train_folder, num_intermediate_frames)
+        self.num_examples = num_examples
         print("File list size: ")
         print(len(self.file_list))
         self.image_size = size
@@ -40,18 +41,36 @@ class IntermediateDataFlow(DataFlow):
         return train_list
 
     def __iter__(self):
-        for image_list in self.file_list:
-            image_tensors = []
-            for image_path in image_list:
-                # convert to tensor
-                image = cv2.imread(image_path)
-                # normalize image
-                image = tf.divide(image, 255)
-                image = cv2.resize(image, (self.image_size, self.image_size))
-                image = np.expand_dims(image, 0)
-                image_tensors.append(image)
-            print("New Images")
-            yield image_tensors
+        if self.num_examples:
+            i = 0
+            for image_list in self.file_list:
+                if i < self.num_examples:
+                    image_tensors = []
+                    for image_path in image_list:
+                        # convert to tensor
+                        image = cv2.imread(image_path)
+                        # normalize image
+                        image = tf.divide(image, 255)
+                        image = cv2.resize(image, (self.image_size, self.image_size))
+                        image = np.expand_dims(image, 0)
+                        image_tensors.append(image)
+                    print("New Images")
+                    i = i + 1
+                    yield image_tensors
+        else:
+            for image_list in self.file_list:
+                image_tensors = []
+                for image_path in image_list:
+                    # convert to tensor
+                    image = cv2.imread(image_path)
+                    # normalize image
+                    image = tf.divide(image, 255)
+                    image = cv2.resize(image, (self.image_size, self.image_size))
+                    image = np.expand_dims(image, 0)
+                    image_tensors.append(image)
+                print("New Images")
+                yield image_tensors
+
 
     def __len__(self):
         return len(self.file_list)
@@ -76,17 +95,14 @@ class IntermediateDataFlow(DataFlow):
 # TODO create lmdb database and save it somewhere, use this for training
 
 
-# df = IntermediateDataFlow("C:\\Uni\\computergrafik\\frames", 8, 512)
-# print(df.__len__())
-# dftools.dump_dataflow_to_lmdb(df,"C:\\Uni\\computergrafik")
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", help="path to the initial files")
     parser.add_argument("--lmdb_path", help="Output path of the lmdb file")
+    parser.add_argument("--num_examples")
 
     args = parser.parse_args()
 
-    df = IntermediateDataFlow(args.file_path, 8, 512)
+    df = IntermediateDataFlow(args.file_path, 8, 512, args.num_examples)
     print("Created Dataflow: Now creating lmdb at: " + args.lmdb_path)
     LMDBSerializer.save(df, args.lmdb_path, 1000)
