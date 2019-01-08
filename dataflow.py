@@ -99,7 +99,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", help="path to the initial files")
     parser.add_argument("--lmdb_path", help="Output path of the lmdb file")
-    parser.add_argument("--num_examples", t)
+    parser.add_argument("--num_examples")
 
     args = parser.parse_args()
 
