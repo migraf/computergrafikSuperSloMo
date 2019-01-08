@@ -13,8 +13,8 @@ import argparse
 class IntermediateDataFlow(DataFlow):
     def __init__(self, train_folder, num_intermediate_frames, size, num_examples=None):
         print(train_folder)
-        self.file_list = self.create_train_files(train_folder, num_intermediate_frames)
         self.num_examples = num_examples
+        self.file_list = self.create_train_files(train_folder, num_intermediate_frames)
         print("File list size: ")
         print(len(self.file_list))
         print(self.num_examples)
