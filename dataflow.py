@@ -17,6 +17,7 @@ class IntermediateDataFlow(DataFlow):
         self.num_examples = num_examples
         print("File list size: ")
         print(len(self.file_list))
+        print(self.num_examples)
         self.image_size = size
 
     def create_train_files(self, train_folder, num_intermediate_frames):
@@ -34,7 +35,7 @@ class IntermediateDataFlow(DataFlow):
             # Sort list of filenames by number
             image_list = sorted(glob.glob(folder + "/" + "*.Jpg"), key=lambda x: int(x.split("/")[-1].split(".")[0]))
             for i in range(0, len(image_list), num_intermediate_frames):
-                if(i > self.num_examples):
+                if i > self.num_examples:
                     return train_list
                 intermed_frames = image_list[i: i + num_intermediate_frames]
                 if (len(intermed_frames) == 8):
