@@ -34,6 +34,8 @@ class IntermediateDataFlow(DataFlow):
             # Sort list of filenames by number
             image_list = sorted(glob.glob(folder + "/" + "*.Jpg"), key=lambda x: int(x.split("/")[-1].split(".")[0]))
             for i in range(0, len(image_list), num_intermediate_frames):
+                if(i > self.num_examples):
+                    return train_list
                 intermed_frames = image_list[i: i + num_intermediate_frames]
                 if (len(intermed_frames) == 8):
                     train_list.append(intermed_frames)
@@ -41,35 +43,18 @@ class IntermediateDataFlow(DataFlow):
         return train_list
 
     def __iter__(self):
-        if self.num_examples:
-            i = 0
-            for image_list in self.file_list:
-                if i < self.num_examples:
-                    image_tensors = []
-                    for image_path in image_list:
-                        # convert to tensor
-                        image = cv2.imread(image_path)
-                        # normalize image
-                        image = tf.divide(image, 255)
-                        image = cv2.resize(image, (self.image_size, self.image_size))
-                        image = np.expand_dims(image, 0)
-                        image_tensors.append(image)
-                    print("New Images")
-                    i = i + 1
-                    yield image_tensors
-        else:
-            for image_list in self.file_list:
-                image_tensors = []
-                for image_path in image_list:
-                    # convert to tensor
-                    image = cv2.imread(image_path)
-                    # normalize image
-                    image = tf.divide(image, 255)
-                    image = cv2.resize(image, (self.image_size, self.image_size))
-                    image = np.expand_dims(image, 0)
-                    image_tensors.append(image)
-                print("New Images")
-                yield image_tensors
+        for image_list in self.file_list:
+            image_tensors = []
+            for image_path in image_list:
+                # convert to tensor
+                image = cv2.imread(image_path)
+                # normalize image
+                image = tf.divide(image, 255)
+                image = cv2.resize(image, (self.image_size, self.image_size))
+                image = np.expand_dims(image, 0)
+                image_tensors.append(image)
+            print("New Images")
+            yield image_tensors
 
 
     def __len__(self):
