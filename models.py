@@ -309,7 +309,6 @@ class FlowModel(ModelDesc):
         #         # compute loss for intermediate image
         #         loss += self.simple_loss(interpolated_image, args[it])
 
-        add_moving_summary(loss)
         self.cost = loss
         add_moving_summary(self.cost)
 
