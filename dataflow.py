@@ -89,6 +89,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    df = IntermediateDataFlow(args.file_path, 8, 512, int(args.num_examples))
+    df = IntermediateDataFlow(args.file_path, 8, 512, num_examples=int(args.num_examples))
     print("Created Dataflow: Now creating lmdb at: " + args.lmdb_path)
     LMDBSerializer.save(df, args.lmdb_path, 1000)
