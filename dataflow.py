@@ -99,10 +99,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", help="path to the initial files")
     parser.add_argument("--lmdb_path", help="Output path of the lmdb file")
-    parser.add_argument("--num_examples")
+    parser.add_argument("--num_examples", t)
 
     args = parser.parse_args()
 
-    df = IntermediateDataFlow(args.file_path, 8, 512, args.num_examples)
+    df = IntermediateDataFlow(args.file_path, 8, 512, int(args.num_examples))
     print("Created Dataflow: Now creating lmdb at: " + args.lmdb_path)
     LMDBSerializer.save(df, args.lmdb_path, 1000)
