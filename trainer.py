@@ -33,7 +33,7 @@ if __name__ == "__main__":
         model=model,
         dataflow=df,
         max_epoch=10,
-        callbacks= [ModelSaver(), ScalarPrinter(enable_step=True)],
+        callbacks= [ModelSaver(),],
         steps_per_epoch=df.size()
 
     )
