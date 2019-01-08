@@ -311,6 +311,7 @@ class FlowModel(ModelDesc):
 
         add_moving_summary(loss)
         self.cost = loss
+        add_moving_summary(self.cost)
 
         return loss
 
