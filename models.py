@@ -13,7 +13,7 @@ class FlowModel(ModelDesc):
         self.name = name
 
     def inputs(self):
-        return [tf.placeholder(tf.float32, (1,512,512,3), name="I_t_" + str(x)) for x in range(8)]
+        return [tf.placeholder(tf.float32, (1,128,128,3), name="I_t_" + str(x)) for x in range(8)]
 
 
     def warping(self, img, flow):
