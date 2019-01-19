@@ -57,7 +57,7 @@ class FlowModel(ModelDesc):
     def visualize_flow(self, flowmap):
         # taken from the open cv samples -> opt_flow
         h,w = flowmap.shape[:2]
-        fx,fy = flow[:,:,0],flow[:,:,1]
+        fx,fy = flowmap[:,:,0],flow[:,:,1]
         angle = np.arctan2(fy,fx) + np.pi
         v = np.sqrt(fx*fx + fy*fy)
         hsv = np.zeros((h,w,3), np.uint8)
