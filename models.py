@@ -289,6 +289,8 @@ class FlowModel(ModelDesc):
         tf.summary.image("Warped Image t0", warped_image_0_scaled, max_outputs=10 )
         tf.summary.image("warped Image t1", warped_image_1_scaled, max_outputs=10)
 
+        print(type(F_0_1))
+
         flow_viz_0_1 = self.visualize_flow(F_0_1.eval())
         flow_viz_1_0 = self.visualize_flow(F_1_0.eval())
 
