@@ -35,7 +35,6 @@ if __name__ == "__main__":
         max_epoch=10,
         callbacks= [ModelSaver(),],
         steps_per_epoch=df.size()
-
     )
     trainer = SimpleTrainer()
     launch_train_with_config(config, trainer)

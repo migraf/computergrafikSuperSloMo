@@ -4,6 +4,7 @@ from sklearn.impute import SimpleImputer
 from tensorpack import logger
 from dataflow import *
 from tensorpack.tfutils.summary import add_moving_summary
+import cv2
 
 
 
@@ -51,6 +52,21 @@ class FlowModel(ModelDesc):
         # we need to enforce the channel_dim known during compile-time here
         shp = img.shape.as_list()
         return tf.reshape(tf.transpose(val, [0, 3, 1, 2]), [-1, shp[1], h, w])
+
+
+    def visualize_flow(self, flowmap):
+        # taken from the open cv samples -> opt_flow
+        h,w = flowmap.shape[:2]
+        fx,fy = flow[:,:,0],flow[:,:,1]
+        angle = np.arctan2(fy,fx) + np.pi
+        v = np.sqrt(fx*fx + fy*fy)
+        hsv = np.zeros((h,w,3), np.uint8)
+        hsv[...,0] = angle*(180/np.pi/2)
+        hsv[...,1] = 255
+        hsv[...,2] = np.minimum(v*4, 255)
+        bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+        return bgr
+
 
 
 
@@ -205,6 +221,7 @@ class FlowModel(ModelDesc):
         out = self.hierarchy_layer_up(out, skip_connections[-4],  64)
         out = self.hierarchy_layer_up(out, skip_connections[-5],  32)
 
+        out = tf.identity(out)
         return out
 
     def simple_loss(self, reconstruction, frame):
@@ -251,8 +268,6 @@ class FlowModel(ModelDesc):
         intermediate_images = []
         basic_flow_result = self.basic_flow(args[0], args[-1])
 
-        print(args[0].shape)
-
         # Multiply flow by scalar because it is normalized between 0 and 1
         F_0_1 = tf.multiply(basic_flow_result[:, :, :, :2], 10)
         F_1_0 = tf.multiply(basic_flow_result[:, :, :, 2:], 10)
@@ -273,6 +288,14 @@ class FlowModel(ModelDesc):
 
         tf.summary.image("Warped Image t0", warped_image_0_scaled, max_outputs=10 )
         tf.summary.image("warped Image t1", warped_image_1_scaled, max_outputs=10)
+
+        flow_viz_0_1 = self.visualize_flow(F_0_1)
+        flow_viz_1_0 = self.visualize_flow(F_1_0)
+
+        viz = tf.concat([args[0], flow_viz_0_1, flow_viz_1_0, args[-1]], 2)
+
+        tf.summary.image("Flow visualization", viz, max_outputs=10)
+
         tf.summary.scalar("loss", loss)
         print(loss)
 
