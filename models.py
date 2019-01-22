@@ -95,6 +95,10 @@ class FlowModel(ModelDesc):
         :return:
         """
         sizes = input.shape
+        print("input size:")
+        print(sizes)
+        print("skip connection size:")
+        print(skip_conection.shape)
         # transform image to NHWC
         out = tf.image.resize_images(input, [sizes[1]*2, sizes[2]*2])
         # TODO change whole thing to one format either NHWC or NCHW
@@ -173,16 +177,11 @@ class FlowModel(ModelDesc):
         :param F_t_0: Estimated flow from t -> 0
         :return:
         """
-
         skip_connections = []
-
         # concatenate inputs
-
         input = tf.concat([I_0, I_1, F_0_1, F_1_0, g_I1_F_t_1, g_I0_F_t_0, F_t_1, F_t_0], axis=3 )
-
         # same u-net architecture as base flow network
         # U-Net Encoder
-
         # First Hierarchy Kernel Size 7
         # size 512
         out = self.hierarchy_layer_down(input, 32, 7, skip_connections)
@@ -204,9 +203,9 @@ class FlowModel(ModelDesc):
         out = self.hierarchy_layer_down(out, 512, 3, skip_connections)
         #skip_connections.append(out)
         # Sixth Layer no average pooling
-        out = tf.layers.conv2d(input, filters = 512, kernel_size = 3, strides=1)
+        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides=1, padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1)
+        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1, padding="same")
         out = tf.nn.leaky_relu(out, alpha=0.1)
 
         # Decoder
@@ -295,9 +294,15 @@ class FlowModel(ModelDesc):
 
         #tf.summary.image("Flow visualization", viz, max_outputs=10)
 
+        all_frames = tf.concat([args[i] for i in range(len(args))], axis=2)
+
+        tf.summary.image("All consecutive frames", all_frames, max_outputs=10)
+
         tf.summary.scalar("loss", loss)
         print(loss)
 
+
+        interpolated_frames = []
         with tf.name_scope("loss_intermediate_frames"):
             # Iterate over intermediate frames
             for it in range(1,8):
@@ -310,12 +315,14 @@ class FlowModel(ModelDesc):
 
                 interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
                                                                g_I0_F_t_0, F_t_1, F_t_0 )
-                print(tf.shape(interpolation_result))
+                print(interpolation_result.shape)
 
                 # get results for visibility maps from interpolation result
-                F_t_0_net = interpolation_result[:,:2,:,:] + F_t_0
-                F_t_1_net = interpolation_result[:,2:4,:,:] + F_t_1
-                V_t_0 = tf.expand_dims(interpolation_result[:,4:,:,:], axis=1)
+                F_t_0_net = interpolation_result[:,:,:,:2] + F_t_0
+                F_t_1_net = interpolation_result[:,:,:,2:4] + F_t_1
+                V_t_0 = tf.expand_dims(interpolation_result[:,:,:,5], axis=3)
+                print("visiblity map shape:")
+                print(V_t_0.shape)
                 V_t_1 = 1 - V_t_0
 
                 g_I0_F_t_0_net = tf.contrib.image.dense_image_warp(args[0], F_t_0_net)
@@ -328,8 +335,13 @@ class FlowModel(ModelDesc):
                 interpolated_image = (1-t)*V_t_0*g_I0_F_t_0_net + t * V_t_1 * g_I1_F_t_0_net
                 interpolated_image = interpolated_image/norm_vis
 
+                # add to list for visualization
+                interpolated_frames.append(interpolated_image)
+
                 # compute loss for intermediate image
                 loss += self.simple_loss(interpolated_image, args[it])
+
+        tf.summary.image("Interpolated consecutive frames", tf.concat(interpolated_frames, axis=2), max_outputs=10)
 
         self.cost = loss
         add_moving_summary(self.cost)
