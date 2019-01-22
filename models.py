@@ -54,20 +54,17 @@ class FlowModel(ModelDesc):
         return tf.reshape(tf.transpose(val, [0, 3, 1, 2]), [-1, shp[1], h, w])
 
 
-    def visualize_flow(self, flowmap):
-        # taken from the open cv samples -> opt_flow
-        h,w = flowmap.shape[:2]
-        fx,fy = flowmap[:,:,0],flowmap[:,:,1]
-        angle = np.arctan2(fy,fx) + np.pi
-        v = np.sqrt(fx*fx + fy*fy)
-        hsv = np.zeros((h,w,3), np.uint8)
-        hsv[...,0] = angle*(180/np.pi/2)
-        hsv[...,1] = 255
-        hsv[...,2] = np.minimum(v*4, 255)
-        bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    def visualize_flow(self, flow):
+        h, w = flow.shape[:2]
+        fx, fy = flow[:, :, 0], flow[:, :, 1]
+        ang = np.arctan2(fy, fx) + np.pi
+        v = np.sqrt(fx * fx + fy * fy)
+        hsv = np.zeros((h, w, 3), np.uint8)
+        hsv[..., 0] = ang * (180 / np.pi / 2)
+        hsv[..., 1] = 255
+        hsv[..., 2] = np.minimum(v * 4, 255)
+        bgr = cv.cvtColor(hsv, cv.COLOR_HSV2BGR)
         return bgr
-
-
 
 
     def hierarchy_layer_down(self, input,  filter, kernel_size, skip_connections):
@@ -269,8 +266,8 @@ class FlowModel(ModelDesc):
         basic_flow_result = self.basic_flow(args[0], args[-1])
 
         # Multiply flow by scalar because it is normalized between 0 and 1
-        F_0_1 = tf.multiply(basic_flow_result[:, :, :, :2], 10)
-        F_1_0 = tf.multiply(basic_flow_result[:, :, :, 2:], 10)
+        F_0_1 = tf.multiply(basic_flow_result[:, :, :, :2], 10, name="F_0_1")
+        F_1_0 = tf.multiply(basic_flow_result[:, :, :, 2:], 10, name="F_1_0")
 
         tf.summary.image("Original Image 0", args[0], max_outputs=10)
         tf.summary.image("Original Image 1", args[-1], max_outputs=10)
@@ -291,48 +288,48 @@ class FlowModel(ModelDesc):
 
         print(type(F_0_1))
 
-        flow_viz_0_1 = self.visualize_flow(F_0_1.eval())
-        flow_viz_1_0 = self.visualize_flow(F_1_0.eval())
+        #flow_viz_0_1 = self.visualize_flow(F_0_1.eval())
+        #flow_viz_1_0 = self.visualize_flow(F_1_0.eval())
 
-        viz = tf.concat([args[0], flow_viz_0_1, flow_viz_1_0, args[-1]], 2)
+        #viz = tf.concat([args[0], flow_viz_0_1, flow_viz_1_0, args[-1]], 2)
 
-        tf.summary.image("Flow visualization", viz, max_outputs=10)
+        #tf.summary.image("Flow visualization", viz, max_outputs=10)
 
         tf.summary.scalar("loss", loss)
         print(loss)
 
-        # with tf.name_scope("loss_intermediate_frames"):
-        #     # Iterate over intermediate frames
-        #     for it in range(1,8):
-        #         t = it/8
-        #         F_t_0 = -(1 - t)*t*F_0_1 + t ** 2 * F_1_0
-        #         F_t_1 = (1 - t)**2 *F_0_1 - t * (1- t) * F_1_0
-        #
-        #         g_I0_F_t_0 = self.warping(args[0], F_t_0)
-        #         g_I1_F_t_0 = self.warping(args[-1], F_t_1)
-        #
-        #         interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
-        #                                                        g_I0_F_t_0, F_t_1, F_t_0 )
-        #         print(tf.shape(interpolation_result))
-        #
-        #         # get results for visibility maps from interpolation result
-        #         F_t_0_net = interpolation_result[:,:2,:,:] + F_t_0
-        #         F_t_1_net = interpolation_result[:,2:4,:,:] + F_t_1
-        #         V_t_0 = tf.expand_dims(interpolation_result[:,4:,:,:], axis=1)
-        #         V_t_1 = 1 - V_t_0
-        #
-        #         g_I0_F_t_0_net = self.warping(args[0], F_t_0_net)
-        #         g_I1_F_t_0_net = self.warping(args[-1], F_t_1_net)
-        #
-        #         # normalization for visibility fields
-        #         norm_vis = (1- t) * V_t_0 + t*V_t_1
-        #
-        #         # calculate interpolated image and normalize
-        #         interpolated_image = (1-t)*V_t_0*g_I0_F_t_0_net + t * V_t_1 * g_I1_F_t_0_net
-        #         interpolated_image = interpolated_image/norm_vis
-        #
-        #         # compute loss for intermediate image
-        #         loss += self.simple_loss(interpolated_image, args[it])
+        with tf.name_scope("loss_intermediate_frames"):
+            # Iterate over intermediate frames
+            for it in range(1,8):
+                t = it/8
+                F_t_0 = -(1 - t)*t*F_0_1 + t ** 2 * F_1_0
+                F_t_1 = (1 - t)**2 *F_0_1 - t * (1- t) * F_1_0
+
+                g_I0_F_t_0 = self.warping(args[0], F_t_0)
+                g_I1_F_t_0 = self.warping(args[-1], F_t_1)
+
+                interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
+                                                               g_I0_F_t_0, F_t_1, F_t_0 )
+                print(tf.shape(interpolation_result))
+
+                # get results for visibility maps from interpolation result
+                F_t_0_net = interpolation_result[:,:2,:,:] + F_t_0
+                F_t_1_net = interpolation_result[:,2:4,:,:] + F_t_1
+                V_t_0 = tf.expand_dims(interpolation_result[:,4:,:,:], axis=1)
+                V_t_1 = 1 - V_t_0
+
+                g_I0_F_t_0_net = self.warping(args[0], F_t_0_net)
+                g_I1_F_t_0_net = self.warping(args[-1], F_t_1_net)
+
+                # normalization for visibility fields
+                norm_vis = (1- t) * V_t_0 + t*V_t_1
+
+                # calculate interpolated image and normalize
+                interpolated_image = (1-t)*V_t_0*g_I0_F_t_0_net + t * V_t_1 * g_I1_F_t_0_net
+                interpolated_image = interpolated_image/norm_vis
+
+                # compute loss for intermediate image
+                loss += self.simple_loss(interpolated_image, args[it])
 
         self.cost = loss
         add_moving_summary(self.cost)
