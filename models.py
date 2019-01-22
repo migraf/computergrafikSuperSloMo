@@ -305,8 +305,8 @@ class FlowModel(ModelDesc):
                 F_t_0 = -(1 - t)*t*F_0_1 + t ** 2 * F_1_0
                 F_t_1 = (1 - t)**2 *F_0_1 - t * (1- t) * F_1_0
 
-                g_I0_F_t_0 = self.warping(args[0], F_t_0)
-                g_I1_F_t_0 = self.warping(args[-1], F_t_1)
+                g_I0_F_t_0 = tf.contrib.image.dense_image_warp(args[0], F_t_0)
+                g_I1_F_t_0 = tf.contrib.image.dense_image_warp(args[-1], F_t_1)
 
                 interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
                                                                g_I0_F_t_0, F_t_1, F_t_0 )
@@ -318,8 +318,8 @@ class FlowModel(ModelDesc):
                 V_t_0 = tf.expand_dims(interpolation_result[:,4:,:,:], axis=1)
                 V_t_1 = 1 - V_t_0
 
-                g_I0_F_t_0_net = self.warping(args[0], F_t_0_net)
-                g_I1_F_t_0_net = self.warping(args[-1], F_t_1_net)
+                g_I0_F_t_0_net = tf.contrib.image.dense_image_warp(args[0], F_t_0_net)
+                g_I1_F_t_0_net = tf.contrib.image.dense_image_warp(args[-1], F_t_1_net)
 
                 # normalization for visibility fields
                 norm_vis = (1- t) * V_t_0 + t*V_t_1
