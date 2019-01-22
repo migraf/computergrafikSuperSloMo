@@ -185,24 +185,24 @@ class FlowModel(ModelDesc):
 
         # First Hierarchy Kernel Size 7
         # size 512
-        out = self.hierarchy_layer_down(input, 32, 7)
-        skip_connections.append(out)
+        out = self.hierarchy_layer_down(input, 32, 7, skip_connections)
+        #skip_connections.append(out)
         # Second Hierarchy Kernel Size 5
         # size 256
-        out = self.hierarchy_layer_down(out, 64, 5)
-        skip_connections.append(out)
+        out = self.hierarchy_layer_down(out, 64, 5, skip_connections)
+        #skip_connections.append(out)
         # Third Hierarchy layer
         # size 128
-        out = self.hierarchy_layer_down(out, 128, 3)
-        skip_connections.append(out)
+        out = self.hierarchy_layer_down(out, 128, 3, skip_connections)
+        #skip_connections.append(out)
         # Fourth
         # Size 64
-        out = self.hierarchy_layer_down(out, 256, 3)
-        skip_connections.append(out)
+        out = self.hierarchy_layer_down(out, 256, 3, skip_connections)
+        # skip_connections.append(out)
         # Fifth
         # Size 32
-        out = self.hierarchy_layer_down(out, 512, 3)
-        skip_connections.append(out)
+        out = self.hierarchy_layer_down(out, 512, 3, skip_connections)
+        #skip_connections.append(out)
         # Sixth Layer no average pooling
         out = tf.layers.conv2d(input, filters = 512, kernel_size = 3, strides=1)
         out = tf.nn.leaky_relu(out, alpha=0.1)
