@@ -95,10 +95,6 @@ class FlowModel(ModelDesc):
         :return:
         """
         sizes = input.shape
-        print("input size:")
-        print(sizes)
-        print("skip connection size:")
-        print(skip_conection.shape)
         # transform image to NHWC
         out = tf.image.resize_images(input, [sizes[1]*2, sizes[2]*2])
         # TODO change whole thing to one format either NHWC or NCHW
