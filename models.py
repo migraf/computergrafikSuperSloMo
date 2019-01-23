@@ -299,40 +299,39 @@ class FlowModel(ModelDesc):
 
 
         interpolated_frames = []
-        with tf.name_scope("loss_intermediate_frames"):
-            # Iterate over intermediate frames
-            for it in range(1,8):
-                t = it/8
-                F_t_0 = -(1 - t)*t*F_0_1 + t ** 2 * F_1_0
-                F_t_1 = (1 - t)**2 *F_0_1 - t * (1- t) * F_1_0
+        # Iterate over intermediate frames
+        for it in range(1,8):
+            t = it/8
+            F_t_0 = -(1 - t)*t*F_0_1 + t ** 2 * F_1_0
+            F_t_1 = (1 - t)**2 *F_0_1 - t * (1- t) * F_1_0
 
-                g_I0_F_t_0 = tf.contrib.image.dense_image_warp(args[0], F_t_0)
-                g_I1_F_t_0 = tf.contrib.image.dense_image_warp(args[-1], F_t_1)
+            g_I0_F_t_0 = tf.contrib.image.dense_image_warp(args[0], F_t_0)
+            g_I1_F_t_0 = tf.contrib.image.dense_image_warp(args[-1], F_t_1)
 
-                interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
-                                                               g_I0_F_t_0, F_t_1, F_t_0 )
-                # get results for visibility maps from interpolation result
-                F_t_0_net = tf.add(interpolation_result[:,:,:,:2],F_t_0, name="flow_t_0")
-                F_t_1_net = tf.add(interpolation_result[:,:,:,2:4], F_t_1, name="flow_t_1")
-                V_t_0 = tf.expand_dims(interpolation_result[:,:,:,5], axis=3)
-                V_t_1 = 1 - V_t_0
+            interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
+                                                           g_I0_F_t_0, F_t_1, F_t_0 )
+            # get results for visibility maps from interpolation result
+            F_t_0_net = tf.add(interpolation_result[:,:,:,:2],F_t_0, name="flow_t_0")
+            F_t_1_net = tf.add(interpolation_result[:,:,:,2:4], F_t_1, name="flow_t_1")
+            V_t_0 = tf.expand_dims(interpolation_result[:,:,:,5], axis=3)
+            V_t_1 = 1 - V_t_0
 
-                g_I0_F_t_0_net = tf.contrib.image.dense_image_warp(args[0], F_t_0_net)
-                g_I1_F_t_0_net = tf.contrib.image.dense_image_warp(args[-1], F_t_1_net)
+            g_I0_F_t_0_net = tf.contrib.image.dense_image_warp(args[0], F_t_0_net)
+            g_I1_F_t_0_net = tf.contrib.image.dense_image_warp(args[-1], F_t_1_net)
 
-                # normalization for visibility fields
-                norm_vis = (1- t) * V_t_0 + t*V_t_1
+            # normalization for visibility fields
+            norm_vis = (1- t) * V_t_0 + t*V_t_1
 
-                # calculate interpolated image and normalize
-                interpolated_image = (1-t)*V_t_0*g_I0_F_t_0_net + t * V_t_1 * g_I1_F_t_0_net
-                interpolated_image = tf.divide(interpolated_image,norm_vis, name="interpolated_image")
-                print(type(interpolated_image))
+            # calculate interpolated image and normalize
+            interpolated_image = (1-t)*V_t_0*g_I0_F_t_0_net + t * V_t_1 * g_I1_F_t_0_net
+            interpolated_image = tf.divide(interpolated_image,norm_vis, name="interpolated_image")
+            print(type(interpolated_image))
 
-                # add to list for visualization
-                interpolated_frames.append(interpolated_image)
+            # add to list for visualization
+            interpolated_frames.append(interpolated_image)
 
-                # compute loss for intermediate image
-                loss += self.simple_loss(interpolated_image, args[it])
+            # compute loss for intermediate image
+            loss += self.simple_loss(interpolated_image, args[it])
 
         tf.summary.image("Interpolated consecutive frames", tf.concat(interpolated_frames, axis=2), max_outputs=10)
 
