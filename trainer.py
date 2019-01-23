@@ -24,7 +24,7 @@ if __name__ == "__main__":
         df = LMDBSerializer.load(args.lmdb_path, shuffle=False)
     else:
         df = dataflow.IntermediateDataFlow(args.file_path, args.num_frames, args.image_size)
-    df = PrefetchData(df, 2)
+    df = PrefetchData(df, 2,2)
     df = BatchData(df, 8)
     print("Dataframe size")
     print(df.size())
