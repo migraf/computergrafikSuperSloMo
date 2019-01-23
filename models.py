@@ -14,7 +14,7 @@ class FlowModel(ModelDesc):
         self.name = name
 
     def inputs(self):
-        return [tf.placeholder(tf.float32, (1,128,128,3), name="I_t_" + str(x)) for x in range(8)]
+        return [tf.placeholder(tf.float32, (8,128,128,3), name="I_t_" + str(x)) for x in range(8)]
 
 
     def warping(self, img, flow):
@@ -272,8 +272,8 @@ class FlowModel(ModelDesc):
         warped_image_1 = tf.contrib.image.dense_image_warp(args[0], F_0_1)
 
 
-        loss += self.simple_loss(args[-1],warped_image_1)
-        loss += self.simple_loss(args[0], warped_image_0)
+        loss += tf.reduce_mean(self.simple_loss(args[-1],warped_image_1))
+        loss += tf.reduce_mean(self.simple_loss(args[0], warped_image_0))
 
         warped_image_0_scaled = tf.multiply(warped_image_0, 255)
         warped_image_1_scaled = tf.multiply(warped_image_1, 255)
@@ -331,7 +331,7 @@ class FlowModel(ModelDesc):
             interpolated_frames.append(interpolated_image)
 
             # compute loss for intermediate image
-            loss += self.simple_loss(interpolated_image, args[it])
+            loss += tf.reduce_mean(self.simple_loss(interpolated_image, args[it]))
 
         tf.summary.image("Interpolated consecutive frames", tf.concat(interpolated_frames, axis=2), max_outputs=10)
 
