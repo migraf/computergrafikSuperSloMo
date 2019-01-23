@@ -24,6 +24,8 @@ if __name__ == "__main__":
         df = LMDBSerializer.load(args.lmdb_path, shuffle=False)
     else:
         df = dataflow.IntermediateDataFlow(args.file_path, args.num_frames, args.image_size)
+    df = PrefetchData(df, 2)
+    df = BatchData(df, 8)
     print("Dataframe size")
     print(df.size())
     print(df.__len__())
@@ -34,7 +36,7 @@ if __name__ == "__main__":
         dataflow=df,
         max_epoch=10,
         callbacks= [ModelSaver(),
-                    FlowVisualisationCallback(["flow_t_0", "flow_t_1"]),],
+                    ],
         steps_per_epoch=df.size()
     )
     trainer = SimpleTrainer()
