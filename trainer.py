@@ -7,7 +7,7 @@ import dataflow
 import models
 import argparse
 from tensorpack.dataflow.serialize import LMDBSerializer
-
+from callbacks import *
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -33,7 +33,8 @@ if __name__ == "__main__":
         model=model,
         dataflow=df,
         max_epoch=10,
-        callbacks= [ModelSaver(),],
+        callbacks= [ModelSaver(),
+                    FlowVisualisationCallback(["flow_t_0", "flow_t_1"]),],
         steps_per_epoch=df.size()
     )
     trainer = SimpleTrainer()

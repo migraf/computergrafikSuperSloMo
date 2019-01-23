@@ -3,7 +3,7 @@ import numpy as np
 import cv2 as cv
 
 
-class VisualisationCallback(Callback):
+class FlowVisualisationCallback(Callback):
 
     def __init__(self, names):
         """
@@ -23,10 +23,13 @@ class VisualisationCallback(Callback):
         bgr = cv.cvtColor(hsv, cv.COLOR_HSV2BGR)
         return bgr
 
-    def _trigger_epoch(self):
-        for name in self.names:
+    def _setup_graph(self):
+        self.tensors = self.get_tensors_maybe_in_tower(self.names)
 
-            self.trainer.monitors.put_image
+    def _trigger_epoch(self):
+            for tensor in self.tensors:
+                flow = self.visualize_flow(tensor.eval(session=self.trainer.sess))
+                self.trainer.monitors.put_image("flow", flow)
 
 
         
