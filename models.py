@@ -301,6 +301,7 @@ class FlowModel(ModelDesc):
         interpolated_frames = []
         # Iterate over intermediate frames
         for it in range(1,8):
+            print(args[0].shape)
             t = it/8
             F_t_0 = -(1 - t)*t*F_0_1 + t ** 2 * F_1_0
             F_t_1 = (1 - t)**2 *F_0_1 - t * (1- t) * F_1_0
