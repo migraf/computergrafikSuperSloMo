@@ -26,5 +26,7 @@ class VisualisationCallback(Callback):
     def _trigger_epoch(self):
         for name in self.names:
 
+            self.trainer.monitors.put_image
+
 
         

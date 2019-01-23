@@ -325,7 +325,8 @@ class FlowModel(ModelDesc):
 
                 # calculate interpolated image and normalize
                 interpolated_image = (1-t)*V_t_0*g_I0_F_t_0_net + t * V_t_1 * g_I1_F_t_0_net
-                interpolated_image = interpolated_image/norm_vis
+                interpolated_image = tf.divide(interpolated_image,norm_vis, name="interpolated_image")
+                print(type(interpolated_image))
 
                 # add to list for visualization
                 interpolated_frames.append(interpolated_image)
