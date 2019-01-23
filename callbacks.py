@@ -28,6 +28,7 @@ class FlowVisualisationCallback(Callback):
 
     def _trigger_epoch(self):
             for tensor in self.tensors:
+                print(type(tensor))
                 flow = self.visualize_flow(tensor.eval(session=self.trainer.sess))
                 self.trainer.monitors.put_image("flow", flow)
 
