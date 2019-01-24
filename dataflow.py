@@ -52,7 +52,7 @@ class IntermediateDataFlow(DataFlow):
                 # normalize image
                 image = tf.divide(image, 255)
                 image = cv2.resize(image, (self.image_size, self.image_size))
-                image = np.expand_dims(image, 0)
+                image = np.expand_dims(image)
                 image_tensors.append(image)
             print("New Images")
             yield image_tensors
@@ -71,7 +71,7 @@ class IntermediateDataFlow(DataFlow):
                 print(image.shape)
                 # normalize image
                 image = tf.divide(image, 255)
-                image = tf.expand_dims(image, 0)
+                image = tf.expand_dims(image)
                 # transpose to get NCHW format
                 image_tensors.append(
                     tf.image.resize_images(image, [self.image_size, self.image_size]))

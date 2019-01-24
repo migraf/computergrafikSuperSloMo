@@ -26,9 +26,10 @@ if __name__ == "__main__":
         df = dataflow.IntermediateDataFlow(args.file_path, args.num_frames, args.image_size)
     #df = PrefetchData(df, 2,2)
     df = BatchData(df, 8)
-    print("Dataframe size")
-    print(df.size())
-    print(df.__len__())
+    # TODO check size of data point
+    print("Datapoint shape")
+    print(next(df.__iter__())[0].shape)
+
     model = models.FlowModel("FlowModel")
     # TODO is this needed/ just use defaults?
     config = TrainConfig(
