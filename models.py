@@ -259,6 +259,10 @@ class FlowModel(ModelDesc):
 
         intermediate_images = []
         basic_flow_result = self.basic_flow(args[0], args[-1])
+        print("Args shape:")
+        print(args[0].shape)
+        print("Flow shape")
+        print(basic_flow_result[:,:,:,:2].shape)
 
         # Multiply flow by scalar because it is normalized between 0 and 1
         F_0_1 = tf.multiply(basic_flow_result[:, :, :, :2], 10, name="F_0_1")
