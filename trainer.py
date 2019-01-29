@@ -15,6 +15,8 @@ if __name__ == "__main__":
     parser.add_argument("--lmdb_path", help="Path of the lmdb file")
     parser.add_argument("--image_size", help="size to scale the images to", default=512)
     parser.add_argument("--num_frames", help="number of intermediate frames", default=8)
+    parser.add_argument("--num_batches", default=1)
+    parser.add_argument("--gpus" ,help="comma separated list of gpus to use")
     # TODO what else do we need
 
     args = parser.parse_args()
@@ -25,12 +27,9 @@ if __name__ == "__main__":
     else:
         df = dataflow.IntermediateDataFlow(args.file_path, args.num_frames, args.image_size)
     #df = PrefetchData(df, 2,2)
-    df = BatchData(df, 8)
-    # TODO check size of data point
-    print("Datapoint shape")
-    print(next(df.__iter__())[0].shape)
+    df = BatchData(df, int(args.num_batches))
 
-    model = models.FlowModel("FlowModel")
+    model = models.FlowModel("FlowModel", int(args.num_batches))
     # TODO is this needed/ just use defaults?
     config = TrainConfig(
         model=model,
@@ -38,7 +37,8 @@ if __name__ == "__main__":
         max_epoch=10,
         callbacks= [ModelSaver(),
                     ],
-        steps_per_epoch=df.size()
+        steps_per_epoch=df.size(),
+        nr_tower=len(args.gpus.split(','))
     )
-    trainer = SimpleTrainer()
+    trainer = SyncMultiGPUTrainer(config.nr_tower)
     launch_train_with_config(config, trainer)

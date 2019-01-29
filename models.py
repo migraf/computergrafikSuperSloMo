@@ -10,11 +10,12 @@ import cv2
 
 
 class FlowModel(ModelDesc):
-    def __init__(self, name):
+    def __init__(self, name, num_batches):
         self.name = name
+        self.num_batches = num_batches
 
     def inputs(self):
-        return [tf.placeholder(tf.float32, (8,128,128,3), name="I_t_" + str(x)) for x in range(8)]
+        return [tf.placeholder(tf.float32, (self.num_batches,128,128,3), name="I_t_" + str(x)) for x in range(8)]
 
 
     def warping(self, img, flow):
