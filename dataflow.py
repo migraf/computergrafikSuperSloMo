@@ -76,8 +76,6 @@ class IntermediateDataFlow(DataFlow):
             data.append(image_tensors)
         return data
 
-# TODO create lmdb database and save it somewhere, use this for training
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

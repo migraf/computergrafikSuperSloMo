@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorpack import ModelDesc
-from sklearn.impute import SimpleImputer
 from tensorpack import logger
 from dataflow import *
 from tensorpack.tfutils.summary import add_moving_summary
