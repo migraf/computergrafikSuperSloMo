@@ -223,8 +223,8 @@ class FlowModel(ModelDesc):
         :param frame:
         :return:
         """
-        l1 = tf.reduce_mean(tf.abs(tf.subtract(frame, reconstruction)))
-        l2 = tf.reduce_mean(tf.squared_difference(frame, reconstruction))
+        l1 = 0.2 * tf.reduce_mean(tf.abs(tf.subtract(frame, reconstruction)))
+        l2 = 0.2* tf.reduce_mean(tf.squared_difference(frame, reconstruction))
         ssim = tf.squeeze(tf.image.ssim(frame, reconstruction, max_val=1.0))
 
         return l1 + l2 + ssim
