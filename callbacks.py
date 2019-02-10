@@ -30,10 +30,10 @@ class FlowVisualisationCallback(Callback):
         self.tensors = self.get_tensors_maybe_in_tower(self.names)
 
     def _trigger_epoch(self):
-            for tensor in self.tensors:
-                print(type(tensor))
-                flow = self.visualize_flow(tensor.eval(session=self.trainer.sess))
-                self.trainer.monitors.put_image("flow", flow)
+            for i in range(len(self.tensors)):
+                print(type(self.tensors[i]))
+                flow = self.visualize_flow(self.tensors[i].eval(session=self.trainer.sess))
+                self.trainer.monitors.put_image(self.names[i], flow)
 
 
         
