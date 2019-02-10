@@ -12,6 +12,7 @@ class FlowVisualisationCallback(Callback):
         self.names = names
 
     def visualize_flow(self, flow):
+        flow = np.squeeze(flow, axis=0)
         h, w = flow.shape[:2]
         fx, fy = flow[:, :, 0], flow[:, :, 1]
         ang = np.arctan2(fy, fx) + np.pi
