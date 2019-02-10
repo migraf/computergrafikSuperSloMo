@@ -223,9 +223,9 @@ class FlowModel(ModelDesc):
         :param frame:
         :return:
         """
-        l1 = 0.2 * tf.reduce_mean(tf.abs(tf.subtract(frame, reconstruction)))
-        l2 = 0.2* tf.reduce_mean(tf.squared_difference(frame, reconstruction))
-        ssim = tf.squeeze(tf.image.ssim(frame, reconstruction, max_val=1.0))
+        l1 = tf.reduce_mean(tf.abs(tf.subtract(frame, reconstruction)))
+        l2 = tf.reduce_mean(tf.squared_difference(frame, reconstruction))
+        ssim = 0.5 * tf.squeeze(tf.image.ssim(frame, reconstruction, max_val=1.0))
 
         return l1 + l2 + ssim
 
@@ -316,8 +316,8 @@ class FlowModel(ModelDesc):
             interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
                                                            g_I0_F_t_0, F_t_1, F_t_0 )
             # get results for visibility maps from interpolation result
-            F_t_0_net = tf.add(interpolation_result[:,:,:,:2],F_t_0, name="flow_t_0")
-            F_t_1_net = tf.add(interpolation_result[:,:,:,2:4], F_t_1, name="flow_t_1")
+            F_t_0_net = tf.add(interpolation_result[:,:,:,:2],F_t_0, name="flow_" + str(t) + "_0")
+            F_t_1_net = tf.add(interpolation_result[:,:,:,2:4], F_t_1, name="flow_" + str(t) +"_1")
             V_t_0 = tf.expand_dims(interpolation_result[:,:,:,5], axis=3)
             V_t_1 = 1 - V_t_0
 

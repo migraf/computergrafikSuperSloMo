@@ -35,7 +35,7 @@ if __name__ == "__main__":
         model=model,
         dataflow=df,
         max_epoch=5,
-        callbacks= [ModelSaver(),
+        callbacks= [ModelSaver(), FlowVisualisationCallback(["F_0_1", "F_1_0"])
                     ],
         steps_per_epoch=df.size(),
         nr_tower=len(args.gpus.split(','))
