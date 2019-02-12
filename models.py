@@ -238,7 +238,7 @@ class FlowModel(ModelDesc):
         # TODO check for NCHW oder NHWC
 
         return 0
-    def warping_loss(self, I0, I1, F_0_1, F_1_0 ):
+    def warping_loss(self, image, flow):
         """
         Warping loss between two images
         TODO needs to be summed and normalized, how to use for intermediate frames?

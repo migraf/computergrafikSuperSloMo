@@ -28,6 +28,7 @@ if __name__ == "__main__":
         df = dataflow.IntermediateDataFlow(args.file_path, args.num_frames, args.image_size)
     #df = PrefetchData(df, 2,2)
     df = BatchData(df, int(args.num_batches))
+    df = LocallyShuffleData(df, buffer_size=8, nr_reuse=0)
 
     model = models.FlowModel("FlowModel", int(args.num_batches))
     # TODO is this needed/ just use defaults?
