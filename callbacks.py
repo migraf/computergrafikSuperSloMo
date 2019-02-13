@@ -14,6 +14,7 @@ class FlowVisualisationCallback(Callback):
         intermediate_flows_1 = ["flow_" + str(x) + "_1" for x in range(1,8)]
         names = names + intermediate_flows_0
         names = names + intermediate_flows_1
+        print("Printing flow names")
         print(names)
 
 
