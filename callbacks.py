@@ -10,6 +10,11 @@ class FlowVisualisationCallback(Callback):
         :param names: Names of the flow maps to visualize
         """
         self.names = names
+        intermediate_flows_0 = ["F_" + str(x) + "_0" for x in range(8)]
+        intermediate_flows_1 = ["F_" + str(x) + "_0" for x in range(8)]
+        names = names + intermediate_flows_0
+        names = names + intermediate_flows_1
+
 
     def visualize_flow(self, flow):
         flow = np.squeeze(flow, axis=0)
