@@ -259,10 +259,6 @@ class FlowModel(ModelDesc):
 
         intermediate_images = []
         basic_flow_result = self.basic_flow(args[0], args[-1])
-        print("Args shape:")
-        print(args[0].shape)
-        print("Flow shape")
-        print(basic_flow_result[:,:,:,:2].shape)
 
         # Multiply flow by scalar because it is normalized between 0 and 1
         F_0_1 = tf.multiply(basic_flow_result[:, :, :, :2], 10, name="F_0_1")
@@ -276,8 +272,7 @@ class FlowModel(ModelDesc):
         warped_image_1 = tf.contrib.image.dense_image_warp(args[0], F_0_1)
 
 
-        loss += tf.reduce_mean(self.simple_loss(args[-1],warped_image_1))
-        loss += tf.reduce_mean(self.simple_loss(args[0], warped_image_0))
+
 
         warped_image_0_scaled = tf.multiply(warped_image_0, 255)
         warped_image_1_scaled = tf.multiply(warped_image_1, 255)
@@ -285,7 +280,6 @@ class FlowModel(ModelDesc):
         tf.summary.image("Warped Image t0", warped_image_0_scaled, max_outputs=10 )
         tf.summary.image("warped Image t1", warped_image_1_scaled, max_outputs=10)
 
-        print(type(F_0_1))
 
         #flow_viz_0_1 = self.visualize_flow(F_0_1.eval())
         #flow_viz_1_0 = self.visualize_flow(F_1_0.eval())
@@ -298,9 +292,12 @@ class FlowModel(ModelDesc):
 
         tf.summary.image("All consecutive frames", all_frames, max_outputs=10)
 
-        tf.summary.scalar("loss", loss)
         print(loss)
 
+        reconstruction_losses = []
+        warping_losses = []
+        warping_losses.append(tf.reduce_mean(tf.losses.absolute_difference(args[-1],warped_image_1)))
+        warping_losses.append(tf.reduce_mean(tf.losses.absolute_difference(args[0], warped_image_0)))
 
         interpolated_frames = []
         # Iterate over intermediate frames
@@ -316,8 +313,9 @@ class FlowModel(ModelDesc):
             interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
                                                            g_I0_F_t_0, F_t_1, F_t_0 )
             # get results for visibility maps from interpolation result
-            F_t_0_net = tf.add(interpolation_result[:,:,:,:2],F_t_0, name="flow_" + str(t) + "_0")
-            F_t_1_net = tf.add(interpolation_result[:,:,:,2:4], F_t_1, name="flow_" + str(t) +"_1")
+            F_t_0_net = tf.multiply(tf.add(interpolation_result[:,:,:,:2],F_t_0), 10, name="flow_" + str(t) + "_0")
+            F_t_1_net = tf.multiply(tf.add(interpolation_result[:,:,:,2:4], F_t_1), 10 , name="flow_" + str(t) +"_1")
+
             V_t_0 = tf.expand_dims(interpolation_result[:,:,:,5], axis=3)
             V_t_1 = 1 - V_t_0
 
@@ -335,15 +333,35 @@ class FlowModel(ModelDesc):
             # add to list for visualization
             interpolated_frames.append(interpolated_image)
 
+            # compute reconstruction losses for intermediate frames
+
+            reconstruction_losses.append(tf.losses.absolute_difference(args[it], interpolated_image))
+
             # compute loss for intermediate image
-            loss += tf.reduce_mean(self.simple_loss(interpolated_image, args[it]))
+            #loss += tf.reduce_mean(self.simple_loss(interpolated_image, args[it]))
+            warping_losses.append(tf.losses.absolute_difference(interpolated_image, args[it]))
 
         tf.summary.image("Interpolated consecutive frames", tf.concat(interpolated_frames, axis=2), max_outputs=10)
+        # Calculating smoothness loss
+        smoothness_loss_0_1 = tf.losses.absolute_difference(F_0_1[:,1:,:,:], F_0_1[:,:-1,:,:]) +  \
+                              tf.losses.absolute_difference(F_0_1[:,:,1:,:], F_0_1[:,:,:-1,:])
+        smoothness_loss_1_0 = tf.losses.absolute_difference(F_1_0[:,1:,:,:], F_1_0[:,:-1,:,:]) +  \
+                              tf.losses.absolute_difference(F_1_0[:,:,1:,:], F_1_0[:,:,:-1,:])
 
-        self.cost = loss
+        smoothness_loss = smoothness_loss_0_1 + smoothness_loss_1_0
+        print("Smoothness loss:")
+        print(smoothness_loss)
+
+        warping_loss = tf.reduce_mean(warping_losses)
+
+        # Reconstruction loss for intermediate frames
+        reconstruction_loss = tf.reduce_mean(reconstruction_losses)
+
+
+        self.cost = 0.8 * reconstruction_loss + 0.4 * warping_loss + smoothness_loss
         add_moving_summary(self.cost)
 
-        return loss
+        return self.cost
 
 
     def optimizer(self):
