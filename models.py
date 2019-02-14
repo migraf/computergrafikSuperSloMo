@@ -75,15 +75,17 @@ class FlowModel(ModelDesc):
         :param kernel_size: for convolution
         :return:
         """
-        out = tf.layers.conv2d(input, filters = filter, kernel_size = kernel_size, strides=1, padding="same")
-        out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.layers.conv2d(out, filters = filter, kernel_size = kernel_size, strides = 1, padding="same")
-        out = tf.nn.leaky_relu(out, alpha=0.1)
+        with tf.variable_scope(initializer=tf.initializers.random_normal()):
 
-        skip_connections.append(out)
+            out = tf.layers.conv2d(input, filters = filter, kernel_size = kernel_size, strides=1, padding="same")
+            out = tf.nn.leaky_relu(out, alpha=0.1)
+            out = tf.layers.conv2d(out, filters = filter, kernel_size = kernel_size, strides = 1, padding="same")
+            out = tf.nn.leaky_relu(out, alpha=0.1)
 
-        out = tf.layers.average_pooling2d(out, 2, 2)
-        return out
+            skip_connections.append(out)
+
+            out = tf.layers.average_pooling2d(out, 2, 2)
+            return out
 
     def hierarchy_layer_up(self, input, skip_conection, filter):
         """
@@ -99,15 +101,17 @@ class FlowModel(ModelDesc):
         out = tf.image.resize_images(input, [sizes[1]*2, sizes[2]*2])
         # TODO change whole thing to one format either NHWC or NCHW
         # transform back to NCHW
-        out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides=1,
-                               padding="same")
-        out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.concat([out, skip_conection], axis=3)
-        out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides = 1,
-                               padding="same")
-        out = tf.nn.leaky_relu(out, alpha=0.1)
+        with tf.variable_scope(initializer=tf.initializers.random_normal()):
 
-        return out
+            out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides=1,
+                                   padding="same")
+            out = tf.nn.leaky_relu(out, alpha=0.1)
+            out = tf.concat([out, skip_conection], axis=3)
+            out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides = 1,
+                                   padding="same")
+            out = tf.nn.leaky_relu(out, alpha=0.1)
+
+            return out
 
     def basic_flow(self, I0, I1):
         """
@@ -117,48 +121,50 @@ class FlowModel(ModelDesc):
         :param I1: image at time 1
         :return:
         """
-        skip_connection = []
-        input = tf.concat([I0, I1],axis=3)
-        # U-Net Encoder
-        # First Hierarchy Kernel Size 7
-        out = self.hierarchy_layer_down(input, 32, 7, skip_connection)
-        #skip_connection.append(out)
-        # Second Hierarchy Kernel Size 5
-        out = self.hierarchy_layer_down(out, 64, 5, skip_connection)
-        #skip_connection.append(out)
-        # Third Hierarchy layer
-        out = self.hierarchy_layer_down(out, 128, 3, skip_connection)
-        #skip_connection.append(out)
-        # Fourth
-        out = self.hierarchy_layer_down(out, 256, 3, skip_connection)
-        #skip_connection.append(out)
-        # Fifth
-        out = self.hierarchy_layer_down(out, 512, 3, skip_connection)
-        #skip_connection.append(out)
-        # Sixth Layer no average pooling
-        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides=1, padding="same")
-        out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1, padding="same")
-        out = tf.nn.leaky_relu(out, alpha=0.1)
+        with tf.variable_scope(initializer=tf.initializers.random_normal()):
+
+            skip_connection = []
+            input = tf.concat([I0, I1],axis=3)
+            # U-Net Encoder
+            # First Hierarchy Kernel Size 7
+            out = self.hierarchy_layer_down(input, 32, 7, skip_connection)
+            #skip_connection.append(out)
+            # Second Hierarchy Kernel Size 5
+            out = self.hierarchy_layer_down(out, 64, 5, skip_connection)
+            #skip_connection.append(out)
+            # Third Hierarchy layer
+            out = self.hierarchy_layer_down(out, 128, 3, skip_connection)
+            #skip_connection.append(out)
+            # Fourth
+            out = self.hierarchy_layer_down(out, 256, 3, skip_connection)
+            #skip_connection.append(out)
+            # Fifth
+            out = self.hierarchy_layer_down(out, 512, 3, skip_connection)
+            #skip_connection.append(out)
+            # Sixth Layer no average pooling
+            out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides=1, padding="same")
+            out = tf.nn.leaky_relu(out, alpha=0.1)
+            out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1, padding="same")
+            out = tf.nn.leaky_relu(out, alpha=0.1)
 
 
 
-        # Decoder
+            # Decoder
 
-        # 5 Hierarchies with skip connections to the encoder networks of the same size
-        out = self.hierarchy_layer_up(out, skip_connection[-1], 512)
-        out = self.hierarchy_layer_up(out, skip_connection[-2], 256)
-        out = self.hierarchy_layer_up(out, skip_connection[-3], 128)
-        out = self.hierarchy_layer_up(out, skip_connection[-4],  64)
-        out = self.hierarchy_layer_up(out, skip_connection[-5],  32)
+            # 5 Hierarchies with skip connections to the encoder networks of the same size
+            out = self.hierarchy_layer_up(out, skip_connection[-1], 512)
+            out = self.hierarchy_layer_up(out, skip_connection[-2], 256)
+            out = self.hierarchy_layer_up(out, skip_connection[-3], 128)
+            out = self.hierarchy_layer_up(out, skip_connection[-4],  64)
+            out = self.hierarchy_layer_up(out, skip_connection[-5],  32)
 
-        # TODO can you just do this?
+            # TODO can you just do this?
 
-        out = tf.layers.conv2d(out, filters=4, kernel_size=3, strides=1, padding="same")
-        out = tf.identity(out)
-        print("Basic flow network created")
+            out = tf.layers.conv2d(out, filters=4, kernel_size=3, strides=1, padding="same")
+            out = tf.identity(out)
+            print("Basic flow network created")
 
-        return out
+            return out
 
     def flow_interpolation(self, I_0, I_1, F_0_1, F_1_0, g_I1_F_t_1, g_I0_F_t_0, F_t_1, F_t_0):
         """
@@ -173,48 +179,49 @@ class FlowModel(ModelDesc):
         :param F_t_0: Estimated flow from t -> 0
         :return:
         """
-        skip_connections = []
-        # concatenate inputs
-        input = tf.concat([I_0, I_1, F_0_1, F_1_0, g_I1_F_t_1, g_I0_F_t_0, F_t_1, F_t_0], axis=3 )
-        # same u-net architecture as base flow network
-        # U-Net Encoder
-        # First Hierarchy Kernel Size 7
-        # size 512
-        out = self.hierarchy_layer_down(input, 32, 7, skip_connections)
-        #skip_connections.append(out)
-        # Second Hierarchy Kernel Size 5
-        # size 256
-        out = self.hierarchy_layer_down(out, 64, 5, skip_connections)
-        #skip_connections.append(out)
-        # Third Hierarchy layer
-        # size 128
-        out = self.hierarchy_layer_down(out, 128, 3, skip_connections)
-        #skip_connections.append(out)
-        # Fourth
-        # Size 64
-        out = self.hierarchy_layer_down(out, 256, 3, skip_connections)
-        # skip_connections.append(out)
-        # Fifth
-        # Size 32
-        out = self.hierarchy_layer_down(out, 512, 3, skip_connections)
-        #skip_connections.append(out)
-        # Sixth Layer no average pooling
-        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides=1, padding="same")
-        out = tf.nn.leaky_relu(out, alpha=0.1)
-        out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1, padding="same")
-        out = tf.nn.leaky_relu(out, alpha=0.1)
+        with tf.variable_scope(initializer=tf.initializers.random_normal()):
+            skip_connections = []
+            # concatenate inputs
+            input = tf.concat([I_0, I_1, F_0_1, F_1_0, g_I1_F_t_1, g_I0_F_t_0, F_t_1, F_t_0], axis=3 )
+            # same u-net architecture as base flow network
+            # U-Net Encoder
+            # First Hierarchy Kernel Size 7
+            # size 512
+            out = self.hierarchy_layer_down(input, 32, 7, skip_connections)
+            #skip_connections.append(out)
+            # Second Hierarchy Kernel Size 5
+            # size 256
+            out = self.hierarchy_layer_down(out, 64, 5, skip_connections)
+            #skip_connections.append(out)
+            # Third Hierarchy layer
+            # size 128
+            out = self.hierarchy_layer_down(out, 128, 3, skip_connections)
+            #skip_connections.append(out)
+            # Fourth
+            # Size 64
+            out = self.hierarchy_layer_down(out, 256, 3, skip_connections)
+            # skip_connections.append(out)
+            # Fifth
+            # Size 32
+            out = self.hierarchy_layer_down(out, 512, 3, skip_connections)
+            #skip_connections.append(out)
+            # Sixth Layer no average pooling
+            out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides=1, padding="same")
+            out = tf.nn.leaky_relu(out, alpha=0.1)
+            out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides = 1, padding="same")
+            out = tf.nn.leaky_relu(out, alpha=0.1)
 
-        # Decoder
+            # Decoder
 
-        # 5 Hierarchies with skip connections to the encoder networks of the same size
-        out = self.hierarchy_layer_up(out, skip_connections[-1], 512)
-        out = self.hierarchy_layer_up(out, skip_connections[-2], 256)
-        out = self.hierarchy_layer_up(out, skip_connections[-3], 128)
-        out = self.hierarchy_layer_up(out, skip_connections[-4],  64)
-        out = self.hierarchy_layer_up(out, skip_connections[-5],  32)
+            # 5 Hierarchies with skip connections to the encoder networks of the same size
+            out = self.hierarchy_layer_up(out, skip_connections[-1], 512)
+            out = self.hierarchy_layer_up(out, skip_connections[-2], 256)
+            out = self.hierarchy_layer_up(out, skip_connections[-3], 128)
+            out = self.hierarchy_layer_up(out, skip_connections[-4],  64)
+            out = self.hierarchy_layer_up(out, skip_connections[-5],  32)
 
-        out = tf.identity(out)
-        return out
+            out = tf.identity(out)
+            return out
 
     def simple_loss(self, reconstruction, frame):
         """
@@ -261,8 +268,8 @@ class FlowModel(ModelDesc):
         basic_flow_result = self.basic_flow(args[0], args[-1])
 
         # Multiply flow by scalar because it is normalized between 0 and 1
-        F_0_1 = tf.multiply(basic_flow_result[:, :, :, :2], 10, name="F_0_1")
-        F_1_0 = tf.multiply(basic_flow_result[:, :, :, 2:], 10, name="F_1_0")
+        F_0_1 = tf.multiply(basic_flow_result[:, :, :, :2], 4, name="F_0_1")
+        F_1_0 = tf.multiply(basic_flow_result[:, :, :, 2:], 4, name="F_1_0")
 
         tf.summary.image("Original Image 0", args[0], max_outputs=10)
         tf.summary.image("Original Image 1", args[-1], max_outputs=10)
@@ -313,8 +320,8 @@ class FlowModel(ModelDesc):
             interpolation_result = self.flow_interpolation(args[0], args[-1], F_0_1, F_1_0 , g_I1_F_t_0,
                                                            g_I0_F_t_0, F_t_1, F_t_0 )
             # get results for visibility maps from interpolation result
-            F_t_0_net = tf.multiply(tf.add(interpolation_result[:,:,:,:2],F_t_0), 10, name="flow_" + str(t) + "_0")
-            F_t_1_net = tf.multiply(tf.add(interpolation_result[:,:,:,2:4], F_t_1), 10 , name="flow_" + str(t) +"_1")
+            F_t_0_net = tf.multiply(tf.add(interpolation_result[:,:,:,:2],F_t_0), 2, name="flow_" + str(t) + "_0")
+            F_t_1_net = tf.multiply(tf.add(interpolation_result[:,:,:,2:4], F_t_1), 2 , name="flow_" + str(t) +"_1")
 
             V_t_0 = tf.expand_dims(interpolation_result[:,:,:,5], axis=3)
             V_t_1 = 1 - V_t_0
