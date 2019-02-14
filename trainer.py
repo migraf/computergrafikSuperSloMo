@@ -34,7 +34,7 @@ if __name__ == "__main__":
     config = TrainConfig(
         model=model,
         dataflow=df,
-        max_epoch=5,
+        max_epoch=8,
         callbacks= [ModelSaver(), FlowVisualisationCallback(["F_0_1", "F_1_0"])
                     ],
         steps_per_epoch=df.size(),
