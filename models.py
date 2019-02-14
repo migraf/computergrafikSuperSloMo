@@ -75,7 +75,7 @@ class FlowModel(ModelDesc):
         :param kernel_size: for convolution
         :return:
         """
-        with tf.variable_scope("layer_down", initializer=tf.initializers.random_normal()):
+        with tf.variable_scope("layer_down", initializer=tf.initializers.random_normal(), reuse=tf.AUTO_REUSE):
 
             out = tf.layers.conv2d(input, filters = filter, kernel_size = kernel_size, strides=1, padding="same")
             out = tf.nn.leaky_relu(out, alpha=0.1)
@@ -101,7 +101,7 @@ class FlowModel(ModelDesc):
         out = tf.image.resize_images(input, [sizes[1]*2, sizes[2]*2])
         # TODO change whole thing to one format either NHWC or NCHW
         # transform back to NCHW
-        with tf.variable_scope("layer_up", initializer=tf.initializers.random_normal()):
+        with tf.variable_scope("layer_up", initializer=tf.initializers.random_normal(), reuse=tf.AUTO_REUSE):
 
             out = tf.layers.conv2d(out, filters=filter, kernel_size=3, strides=1,
                                    padding="same")
@@ -121,7 +121,7 @@ class FlowModel(ModelDesc):
         :param I1: image at time 1
         :return:
         """
-        with tf.variable_scope("basic", initializer=tf.initializers.random_normal()):
+        with tf.variable_scope("basic", initializer=tf.initializers.random_normal(), reuse=tf.AUTO_REUSE):
 
             skip_connection = []
             input = tf.concat([I0, I1],axis=3)
@@ -179,7 +179,7 @@ class FlowModel(ModelDesc):
         :param F_t_0: Estimated flow from t -> 0
         :return:
         """
-        with tf.variable_scope("interpol", initializer=tf.initializers.random_normal()):
+        with tf.variable_scope("interpol", initializer=tf.initializers.random_normal(), reuse=tf.AUTO_REUSE):
             skip_connections = []
             # concatenate inputs
             input = tf.concat([I_0, I_1, F_0_1, F_1_0, g_I1_F_t_1, g_I0_F_t_0, F_t_1, F_t_0], axis=3 )
