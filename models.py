@@ -189,23 +189,23 @@ class FlowModel(ModelDesc):
             # U-Net Encoder
             # First Hierarchy Kernel Size 7
             # size 512
-            out = self.hierarchy_layer_down(input, 32, 7, skip_connections)
+            out = self.hierarchy_layer_down(input, 32, 7, skip_connections, "down0")
             #skip_connections.append(out)
             # Second Hierarchy Kernel Size 5
             # size 256
-            out = self.hierarchy_layer_down(out, 64, 5, skip_connections)
+            out = self.hierarchy_layer_down(out, 64, 5, skip_connections, "down1")
             #skip_connections.append(out)
             # Third Hierarchy layer
             # size 128
-            out = self.hierarchy_layer_down(out, 128, 3, skip_connections)
+            out = self.hierarchy_layer_down(out, 128, 3, skip_connections, "down2")
             #skip_connections.append(out)
             # Fourth
             # Size 64
-            out = self.hierarchy_layer_down(out, 256, 3, skip_connections)
+            out = self.hierarchy_layer_down(out, 256, 3, skip_connections, "down3")
             # skip_connections.append(out)
             # Fifth
             # Size 32
-            out = self.hierarchy_layer_down(out, 512, 3, skip_connections)
+            out = self.hierarchy_layer_down(out, 512, 3, skip_connections, "down4")
             #skip_connections.append(out)
             # Sixth Layer no average pooling
             out = tf.layers.conv2d(out, filters = 512, kernel_size = 3, strides=1, padding="same")
@@ -216,11 +216,11 @@ class FlowModel(ModelDesc):
             # Decoder
 
             # 5 Hierarchies with skip connections to the encoder networks of the same size
-            out = self.hierarchy_layer_up(out, skip_connections[-1], 512)
-            out = self.hierarchy_layer_up(out, skip_connections[-2], 256)
-            out = self.hierarchy_layer_up(out, skip_connections[-3], 128)
-            out = self.hierarchy_layer_up(out, skip_connections[-4],  64)
-            out = self.hierarchy_layer_up(out, skip_connections[-5],  32)
+            out = self.hierarchy_layer_up(out, skip_connections[-1], 512, "up0")
+            out = self.hierarchy_layer_up(out, skip_connections[-2], 256, "up1")
+            out = self.hierarchy_layer_up(out, skip_connections[-3], 128, "up2")
+            out = self.hierarchy_layer_up(out, skip_connections[-4],  64, "up3")
+            out = self.hierarchy_layer_up(out, skip_connections[-5],  32, "up4")
 
             out = tf.identity(out)
             return out
