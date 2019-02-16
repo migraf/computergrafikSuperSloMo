@@ -368,7 +368,8 @@ class FlowModel(ModelDesc):
 
 
         self.cost = 0.8 * reconstruction_loss + 0.4 * warping_loss + smoothness_loss
-        add_moving_summary(self.cost)
+        loss = self.cost
+        add_moving_summary(loss)
 
         return self.cost
 
