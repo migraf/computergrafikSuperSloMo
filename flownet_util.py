@@ -13,7 +13,11 @@ import argparse
 def chairs_train_test_split_lists(data_folder):
     # only look at the numbers in the chairs dataset and sort by them
     right_left_image_list = sorted(glob.glob(data_folder + "/" + "*.ppm"), key= lambda x : int(x[-14:-9]))
-    print(right_left_image_list)
+    left_images = right_left_image_list[0::2]
+    right_images = right_left_image_list[1::2]
+    flow_paths = sorted(glob.glob(data_folder + "/" + "*.flo"), key= lambda x : int(x[-14:-9]))
+
+    print(left_images[:5], right_images[:5], flow_paths[:5])
 
 
 def read_flow(flow_path):
