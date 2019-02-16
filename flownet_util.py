@@ -24,7 +24,8 @@ def chairs_train_test_split_lists(data_folder):
     right_images = right_left_image_list[1::2]
     flow_paths = sorted(glob.glob(data_folder + "/" + "*.flo"), key= lambda x : int(x[-14:-9]))
     train_left, test_left, train_right, test_right, train_flow, test_flow = train_test_split(left_images, right_images, flow_paths, test_size=0.2)
-    np.save("train_test_split", [train_left, test_left, train_right, test_right, train_flow, test_flow])
+    np.save("train_paths", [train_left, train_right, train_flow])
+    np.save("test_paths", [test_left, test_right, test_flow])
 
 
 
@@ -45,7 +46,7 @@ def read_flow(flow_path):
 
 
 class FlownetDataflow(DataFlow):
-    def __init__(self, height, width):
+    def __init__(self, height, width, ):
         self.height = height
         self.width = width
 
