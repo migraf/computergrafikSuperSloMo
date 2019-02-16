@@ -11,9 +11,9 @@ import argparse
 
 
 def chairs_train_test_split_lists(data_folder):
-    print(glob.escape(data_folder + "/" + "*.ppm"))
+    print(glob.glob(data_folder + "/" + "*.ppm"))
     # only look at the numbers in the chairs dataset and sort by them
-    right_left_image_list = sorted(glob.escape(data_folder + "/" + "*.ppm"), key= lambda x : int(x[-12:-8]))
+    right_left_image_list = sorted(glob.glob(data_folder + "/" + "*.ppm"), key= lambda x : int(x[-12:-8]))
     print(right_left_image_list)
 
 
