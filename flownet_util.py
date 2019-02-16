@@ -12,15 +12,20 @@ from sklearn.model_selection import train_test_split
 
 
 def chairs_train_test_split_lists(data_folder):
+    """
+    Creates ordered list of left_img, right_img, flow for splitting the data into training and testing set
+    saves it in a 2d numpy array
+    :param data_folder:
+    :return:
+    """
     # only look at the numbers in the chairs dataset and sort by them
     right_left_image_list = sorted(glob.glob(data_folder + "/" + "*.ppm"), key= lambda x : int(x[-14:-9]) + int(x[-5]))
     left_images = right_left_image_list[0::2]
     right_images = right_left_image_list[1::2]
     flow_paths = sorted(glob.glob(data_folder + "/" + "*.flo"), key= lambda x : int(x[-14:-9]))
-    print(len(left_images))
-
     train_left, test_left, train_right, test_right, train_flow, test_flow = train_test_split(left_images, right_images, flow_paths, test_size=0.2)
-    print(len(train_left))
+    np.save("train_test_split", [train_left, test_left, train_right, test_right, train_flow, test_flow])
+
 
 
 def read_flow(flow_path):
