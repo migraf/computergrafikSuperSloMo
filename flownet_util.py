@@ -19,7 +19,7 @@ def chairs_train_test_split_lists(data_folder):
     flow_paths = sorted(glob.glob(data_folder + "/" + "*.flo"), key= lambda x : int(x[-14:-9]))
     print(len(left_images))
 
-    train_left, test_left, train_right, test_right, train_flow, test_flow = train_test_split([left_images, right_images, flow_paths], test_size=0.2)
+    train_left, test_left, train_right, test_right, train_flow, test_flow = train_test_split(left_images, right_images, flow_paths, test_size=0.2)
     print(len(train_left))
 
 
