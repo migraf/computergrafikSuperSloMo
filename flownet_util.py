@@ -11,6 +11,7 @@ import argparse
 
 
 def train_test_split_lists(data_folder):
+    print(glob.escape(data_folder + "/" + "*.ppm"))
     right_left_image_list = sorted(glob.escape(data_folder + "/" + "*.ppm"), key= lambda x : int(x.split("_")[0]))
     print(right_left_image_list)
 
