@@ -168,6 +168,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", help="array containing the training images", default="/graphics/scratch/students/graf/computergrafikSuperSloMo/train_paths.npy")
     parser.add_argument("--num_batches", default=1)
+    parser.add_argument("--gpus", default="0,1,2,3")
     # TODO what else do we need
 
     args = parser.parse_args()
