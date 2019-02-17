@@ -4,18 +4,22 @@ from tensorpack import logger
 from dataflow import *
 from tensorpack.tfutils.summary import add_moving_summary
 import cv2
+from flownet_util import *
+from tensorpack.train import TrainConfig
+from tensorpack import *
 
 
 class FlowNetModel(ModelDesc):
-    def __init__(self, name, height, width):
+    def __init__(self, name, height, width, num_batches):
         self.name = name
         self.height = height
         self.width = width
+        self.num_batches = num_batches
 
     def input_names(self):
-        return [tf.placeholder(tf.float32, (1,3, self.height, self.width), name="left_image"),
-                tf.placeholder(tf.float32, (1,3,self.height, self.width), name="right_image"),
-                tf.placeholder(tf.float32, (1,2, self.height, self.width), name="flow")]
+        return [tf.placeholder(tf.float32, (self.num_batches, 3, self.height, self.width), name="left_image"),
+                tf.placeholder(tf.float32, (self.num_batches, 3, self.height, self.width), name="right_image"),
+                tf.placeholder(tf.float32, (self.num_batches, 2, self.height, self.width), name="flow")]
 
     def correlation(ina, inb,
                     kernel_size, max_displacement,
@@ -52,6 +56,8 @@ class FlowNetModel(ModelDesc):
         return res
 
     def _build_graph(self, left_image, right_image, flow):
+
+        tf.summary.image(name="ground truth flow", tensor=visualize_flow(flow), max_outputs=3)
 
         # Left channel of correlated flow net architecture, figure2 in Paper
         left_channel = tf.layers.conv2d(left_image, 64, kernel_size=7, strides=(2,2),
@@ -109,6 +115,7 @@ class FlowNetModel(ModelDesc):
         concat = tf.concat([upconv5, conv_5_1], axis=1)
         predict_flow5 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="same",
                                          activation=tf.identity, name="flow5")
+        tf.summary.image(name="flow5", tensor=visualize_flow(predict_flow5), max_outputs=3)
 
         # Second Flow prediction
 
@@ -117,6 +124,7 @@ class FlowNetModel(ModelDesc):
         concat = tf.concat([upconv4, conv_4_1, predict_flow5], axis=1)
         predict_flow4 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="same",
                                          activation=tf.identity, name="flow4")
+        tf.summary.image(name="flow4", tensor=visualize_flow(predict_flow4), max_outputs=3)
 
         # Third Flow
 
@@ -125,6 +133,7 @@ class FlowNetModel(ModelDesc):
         concat = tf.concat([upconv3, conv_3_1, predict_flow4], axis=1)
         predict_flow3 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="same",
                                          activation=tf.identity, name="flow3")
+        tf.summary.image(name="flow3", tensor=visualize_flow(predict_flow3), max_outputs=3)
 
         # Final Flow
 
@@ -141,6 +150,8 @@ class FlowNetModel(ModelDesc):
 
         final_prediction = tf.identity(upsampled_flow, name="final_prediction")
 
+        tf.summary.image(name="flow_prediction", tensor=visualize_flow(final_prediction), max_outputs=3)
+
         epe = tf.reduce_mean(tf.norm(final_prediction - flow, axis=3))
         add_moving_summary(epe)
 
@@ -148,13 +159,37 @@ class FlowNetModel(ModelDesc):
 
         return self.cost
 
+    def optimizer(self):
+        return tf.train.AdamOptimizer(0.0001)
 
 
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--file_path", help="array containing the training images", default="/graphics/scratch/students/graf/computergrafikSuperSloMo/train_paths.npy")
+    parser.add_argument("--num_batches", default=1)
+    # TODO what else do we need
+
+    args = parser.parse_args()
+
+    logger.auto_set_dir()
 
 
+    df = FlownetDataflow(args.file_path)
+    df = BatchData(df, args.num_batches)
 
-
+    model = FlowNetModel("flownet", df.height, df.width)
+    config = TrainConfig(
+        model=model,
+        dataflow=df,
+        max_epoch=10,
+        callbacks= [ModelSaver(),
+                    ],
+        steps_per_epoch=df.size(),
+        nr_tower=len(args.gpus.split(','))
+    )
+    trainer = SyncMultiGPUTrainer(config.nr_tower)
+    launch_train_with_config(config, trainer)
 
 
 

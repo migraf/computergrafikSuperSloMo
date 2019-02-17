@@ -5,10 +5,12 @@ import tensorflow as tf
 from tensorpack.dataflow.base import DataFlow
 import tensorpack.dataflow as dataflow
 from tensorpack.dataflow.serialize import LMDBSerializer
+from tensorpack.train import TrainConfig
 import glob
 import cv2
 import argparse
 from sklearn.model_selection import train_test_split
+from callbacks import *
 
 
 def chairs_train_test_split_lists(data_folder):
@@ -61,11 +63,15 @@ def visualize_flow(self, flow):
 
 
 class FlownetDataflow(DataFlow):
-    def __init__(self, height, width, files_path):
-        self.height = height
-        self.width = width
+    def __init__(self, files_path):
         self.path = files_path
         self.file_names = np.load(files_path)
+        input_shape = cv2.imread(self.file_names[0][0]).shape
+        print("input shape")
+        print(input_shape)
+        self.height = input_shape[0]
+        self.width = input_shape[1]
+
 
     def __iter__(self):
         for i in range(len(self.file_names[0])):
@@ -80,5 +86,6 @@ class FlownetDataflow(DataFlow):
 
 
 
-df = FlownetDataflow(256, 256,"/graphics/scratch/students/graf/computergrafikSuperSloMo/train_paths.npy")
+df = FlownetDataflow("/graphics/scratch/students/graf/computergrafikSuperSloMo/train_paths.npy")
+print("DataFlow created - size:")
 print(len(df))
