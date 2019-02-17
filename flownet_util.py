@@ -79,7 +79,7 @@ class FlownetDataflow(DataFlow):
             right_image = cv2.imread(self.file_names[1][i])
             flow = read_flow(self.file_names[2][i])
 
-            yield [left_image, right_image, flow]
+            yield (left_image, right_image, flow)
     def __len__(self):
         return self.file_names.shape[1]
 
