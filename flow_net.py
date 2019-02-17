@@ -55,7 +55,10 @@ class FlowNetModel(ModelDesc):
         res = tf.concat(res, axis=3)  # ND^2HW
         return res
 
-    def _build_graph(self, *args):
+    def build_graph(self, *args):
+        flow_viz = visualize_flow(args[2])
+        print("Flow viz shape")
+        print(flow_viz.shape)
 
         tf.summary.image(name="ground truth flow", tensor=visualize_flow(args[2]), max_outputs=3)
 
