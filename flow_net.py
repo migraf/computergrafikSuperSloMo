@@ -55,12 +55,12 @@ class FlowNetModel(ModelDesc):
         res = tf.concat(res, axis=3)  # ND^2HW
         return res
 
-    def _build_graph(self, left_image, right_image, flow):
+    def _build_graph(self, *args):
 
-        tf.summary.image(name="ground truth flow", tensor=visualize_flow(flow), max_outputs=3)
+        tf.summary.image(name="ground truth flow", tensor=visualize_flow(args[2]), max_outputs=3)
 
         # Left channel of correlated flow net architecture, figure2 in Paper
-        left_channel = tf.layers.conv2d(left_image, 64, kernel_size=7, strides=(2,2),
+        left_channel = tf.layers.conv2d(args[0], 64, kernel_size=7, strides=(2,2),
                                         activation=tf.nn.relu, name="left_conv0", padding="same")
         left_conv1 = tf.layers.conv2d(left_channel, 128, kernel_size=5, strides=(2,2),
                                         activation=tf.nn.relu, name="left_conv1", padding="same")
@@ -68,7 +68,7 @@ class FlowNetModel(ModelDesc):
                                         activation=tf.nn.relu, name="left_conv2", padding="same")
 
         # Right channel of correlated flow net architecture, figure2 in Paper
-        right_channel = tf.layers.conv2d(right_image, 64, kernel_size=7, strides=(2,2),
+        right_channel = tf.layers.conv2d(args[1], 64, kernel_size=7, strides=(2,2),
                                         activation=tf.nn.relu, name="right_conv0", padding="same")
         right_conv1 = tf.layers.conv2d(right_channel, 128, kernel_size=5, strides=(2,2),
                                         activation=tf.nn.relu, name="right_conv1", padding="same")
@@ -84,7 +84,7 @@ class FlowNetModel(ModelDesc):
 
         corr = tf.nn.relu(corr)
 
-        left_conv_input = tf.layers.conv2d(left_image, 32, kernel_size=1, strides=(1,1),
+        left_conv_input = tf.layers.conv2d(left_conv2, 32, kernel_size=1, strides=(1,1),
                                         activation=tf.nn.relu, name="left_conv_input", padding="same")
 
         # Contracting Part of the architecture
@@ -152,7 +152,7 @@ class FlowNetModel(ModelDesc):
 
         tf.summary.image(name="flow_prediction", tensor=visualize_flow(final_prediction), max_outputs=3)
 
-        epe = tf.reduce_mean(tf.norm(final_prediction - flow, axis=3))
+        epe = tf.reduce_mean(tf.norm(final_prediction - args[2], axis=3))
         add_moving_summary(epe)
 
         self.cost = epe
