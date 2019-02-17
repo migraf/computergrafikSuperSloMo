@@ -175,10 +175,10 @@ if __name__ == "__main__":
     logger.auto_set_dir()
 
 
-    df = FlownetDataflow(args.file_path)
+    df1 = FlownetDataflow(args.file_path)
     df = BatchData(df, args.num_batches)
 
-    model = FlowNetModel("flownet", df.height, df.width)
+    model = FlowNetModel("flownet", df1.height, df1.width)
     config = TrainConfig(
         model=model,
         dataflow=df,
