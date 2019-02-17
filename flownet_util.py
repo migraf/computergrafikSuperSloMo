@@ -44,11 +44,41 @@ def read_flow(flow_path):
             data2D = np.resize(data, (h, w, 2))
             return data2D
 
+def visualize_flow(self, flow):
+        flow = np.squeeze(flow, axis=0)
+        h, w = flow.shape[:2]
+        fx, fy = flow[:, :, 0], flow[:, :, 1]
+        ang = np.arctan2(fy, fx) + np.pi
+        print("Flow shape:")
+        print(flow.shape)
+        v = np.sqrt(fx * fx + fy * fy)
+        hsv = np.zeros((h, w, 3), np.uint8)
+        hsv[..., 0] = ang * (180 / np.pi / 2)
+        hsv[..., 1] = 255
+        hsv[..., 2] = np.minimum(v * 4, 255)
+        bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+        return bgr
+
 
 class FlownetDataflow(DataFlow):
-    def __init__(self, height, width, ):
+    def __init__(self, height, width, files_path):
         self.height = height
         self.width = width
+        self.path = files_path
+        self.file_names = np.load(files_path)
+
+    def __iter__(self):
+        for i in range(len(self.file_names[0])):
+            left_image = cv2.imread(self.file_names[0][i])
+            right_image = cv2.imread(self.file_names[1][i])
+            flow = read_flow(self.file_names[2][i])
+
+            yield [left_image, right_image, flow]
+    def __len__(self):
+        return self.file_names.shape[1]
 
 
-chairs_train_test_split_lists("/graphics/scratch/students/graf/data/flownet/FlyingChairs_release/data")
+
+
+df = FlownetDataflow(256, 256,"/graphics/scratch/students/graf/computergrafikSuperSloMo/train_paths.npy")
+print(len(df))
