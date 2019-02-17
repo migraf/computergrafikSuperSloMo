@@ -16,7 +16,7 @@ class FlowNetModel(ModelDesc):
         self.width = width
         self.num_batches = num_batches
 
-    def input_names(self):
+    def inputs(self):
         return [tf.placeholder(tf.float32, (self.num_batches, 3, self.height, self.width), name="left_image"),
                 tf.placeholder(tf.float32, (self.num_batches, 3, self.height, self.width), name="right_image"),
                 tf.placeholder(tf.float32, (self.num_batches, 2, self.height, self.width), name="flow")]
