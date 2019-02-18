@@ -48,11 +48,12 @@ def read_flow(flow_path):
 
 def visualize_flow(flow):
         flow = np.squeeze(flow, axis=0)
+        print("Flow shape:")
+        print(flow.shape)
         h, w = flow.shape[:2]
         fx, fy = flow[:, :, 0], flow[:, :, 1]
         ang = np.arctan2(fy, fx) + np.pi
-        print("Flow shape:")
-        print(flow.shape)
+
         v = np.sqrt(fx * fx + fy * fy)
         hsv = np.zeros((h, w, 3), np.uint8)
         hsv[..., 0] = ang * (180 / np.pi / 2)
