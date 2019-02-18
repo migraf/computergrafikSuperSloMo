@@ -75,9 +75,16 @@ class FlowNetModel(ModelDesc):
         right_conv2 = tf.layers.conv2d(right_conv1, 256, kernel_size=5, strides=(2,2),
                                         activation=tf.nn.relu, name="right_conv2", padding="same")
 
+        # TODO check shapes of correlation
+
         corr = self.correlation(left_conv2, right_conv2, 1, 20, 1, 2, 20, "NHWC")
 
         corr = tf.nn.relu(corr)
+        print("Corr shape")
+        print(corr.shape)
+
+        print("Left conv shape: ")
+        print(left_conv2.shape)
 
         left_conv_input = tf.layers.conv2d(left_conv2, 32, kernel_size=1, strides=(1,1),
                                         activation=tf.nn.relu, name="left_conv_input", padding="same")
