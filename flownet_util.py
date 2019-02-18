@@ -49,11 +49,8 @@ def read_flow(flow_path):
 def visualize_flow(flow):
         print("initial flow shape")
         print(flow.shape)
-        flow = np.squeeze(flow, axis=0)
-        print("Flow shape:")
-        print(flow.shape)
-        h, w = flow.shape[:2]
-        fx, fy = flow[:, :, 0], flow[:, :, 1]
+        h, w = flow.shape[-2:]
+        fx, fy = flow[:, :, :, 0], flow[:, :, 1]
         ang = np.arctan2(fy, fx) + np.pi
 
         v = np.sqrt(fx * fx + fy * fy)
