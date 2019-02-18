@@ -17,9 +17,9 @@ class FlowNetModel(ModelDesc):
         self.num_batches = num_batches
 
     def inputs(self):
-        return [tf.placeholder(tf.float32, (self.num_batches, 3, self.height, self.width), name="left_image"),
-                tf.placeholder(tf.float32, (self.num_batches, 3, self.height, self.width), name="right_image"),
-                tf.placeholder(tf.float32, (self.num_batches, 2, self.height, self.width), name="flow")]
+        return [tf.placeholder(tf.float32, (self.num_batches, self.height, self.width, 3), name="left_image"),
+                tf.placeholder(tf.float32, (self.num_batches, self.height, self.width, 3), name="right_image"),
+                tf.placeholder(tf.float32, (self.num_batches, self.height, self.width, 2), name="flow")]
 
     def correlation(ina, inb,
                     kernel_size, max_displacement,
