@@ -59,7 +59,7 @@ class FlowNetModel(ModelDesc):
         print(args[2].shape)
         print(args)
 
-        tf.summary.image(name="ground truth flow", tensor=visualize_flow(args[2]), max_outputs=3)
+        tf.summary.image(name="ground truth flow", tensor=visualize_flow(args[2].eval()), max_outputs=3)
 
         # Left channel of correlated flow net architecture, figure2 in Paper
         left_channel = tf.layers.conv2d(args[0], 64, kernel_size=7, strides=(2,2),
