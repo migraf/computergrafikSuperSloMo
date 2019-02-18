@@ -46,7 +46,7 @@ def read_flow(flow_path):
             data2D = np.resize(data, (h, w, 2))
             return data2D
 
-def visualize_flow(self, flow):
+def visualize_flow(flow):
         flow = np.squeeze(flow, axis=0)
         h, w = flow.shape[:2]
         fx, fy = flow[:, :, 0], flow[:, :, 1]
