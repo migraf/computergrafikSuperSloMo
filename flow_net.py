@@ -57,8 +57,9 @@ class FlowNetModel(ModelDesc):
 
     def build_graph(self, *args):
         print(args[2])
-        flow_viz = visualize_flow(args[2])
         print(args)
+        flow_viz = visualize_flow(args[2])
+
         print("Flow viz shape")
         print(flow_viz.shape)
 
