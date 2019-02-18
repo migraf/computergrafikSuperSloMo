@@ -21,7 +21,7 @@ class FlowNetModel(ModelDesc):
                 tf.placeholder(tf.float32, (self.num_batches, self.height, self.width, 3), name="right_image"),
                 tf.placeholder(tf.float32, (self.num_batches, self.height, self.width, 2), name="flow")]
 
-    def correlation(ina, inb,
+    def correlation(self, ina, inb,
                     kernel_size, max_displacement,
                     stride_1, stride_2,
                     pad, data_format):
