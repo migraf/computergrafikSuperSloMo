@@ -47,6 +47,8 @@ def read_flow(flow_path):
             return data2D
 
 def visualize_flow(flow):
+        print("initial flow shape")
+        print(flow.shape)
         flow = np.squeeze(flow, axis=0)
         print("Flow shape:")
         print(flow.shape)
