@@ -76,11 +76,11 @@ class FlowNetModel(ModelDesc):
                                         activation=tf.nn.relu, name="right_conv2", padding="same")
 
         corr = self.correlation(left_conv2, right_conv2,
-                           kernel_size=1,
+                           1,
                            max_displacement=20,
                            stride_1=1,
                            stride_2=2,
-                           pad=20, data_format='NCHW')
+                           pad=20, data_format='NHWC')
 
         corr = tf.nn.relu(corr)
 
