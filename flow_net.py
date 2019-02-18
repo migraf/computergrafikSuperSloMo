@@ -56,7 +56,7 @@ class FlowNetModel(ModelDesc):
         return res
 
     def build_graph(self, *args):
-        print(args[2])
+        print(args[2].shape)
         print(args)
 
         tf.summary.image(name="ground truth flow", tensor=visualize_flow(args[2]), max_outputs=3)
