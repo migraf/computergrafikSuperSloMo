@@ -59,8 +59,6 @@ class FlowNetModel(ModelDesc):
         print(args[2].shape)
         print(args)
 
-        tf.summary.image(name="ground truth flow", tensor=visualize_flow(args[2].eval()), max_outputs=3)
-
         # Left channel of correlated flow net architecture, figure2 in Paper
         left_channel = tf.layers.conv2d(args[0], 64, kernel_size=7, strides=(2,2),
                                         activation=tf.nn.relu, name="left_conv0", padding="same")
@@ -117,7 +115,7 @@ class FlowNetModel(ModelDesc):
         concat = tf.concat([upconv5, conv_5_1], axis=1)
         predict_flow5 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="same",
                                          activation=tf.identity, name="flow5")
-        tf.summary.image(name="flow5", tensor=visualize_flow(predict_flow5), max_outputs=3)
+        # tf.summary.image(name="flow5", tensor=visualize_flow(predict_flow5), max_outputs=3)
 
         # Second Flow prediction
 
@@ -126,7 +124,7 @@ class FlowNetModel(ModelDesc):
         concat = tf.concat([upconv4, conv_4_1, predict_flow5], axis=1)
         predict_flow4 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="same",
                                          activation=tf.identity, name="flow4")
-        tf.summary.image(name="flow4", tensor=visualize_flow(predict_flow4), max_outputs=3)
+        # tf.summary.image(name="flow4", tensor=visualize_flow(predict_flow4), max_outputs=3)
 
         # Third Flow
 
@@ -135,7 +133,7 @@ class FlowNetModel(ModelDesc):
         concat = tf.concat([upconv3, conv_3_1, predict_flow4], axis=1)
         predict_flow3 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="same",
                                          activation=tf.identity, name="flow3")
-        tf.summary.image(name="flow3", tensor=visualize_flow(predict_flow3), max_outputs=3)
+        # tf.summary.image(name="flow3", tensor=visualize_flow(predict_flow3), max_outputs=3)
 
         # Final Flow
 
@@ -150,9 +148,16 @@ class FlowNetModel(ModelDesc):
         new_shape = final_flow.shape[1:3] * 4
         upsampled_flow = tf.image.resize_nearest_neighbor(tf.multiply(final_flow, 20) ,  new_shape)
 
+        # Flows to visualize in tensorboard
         final_prediction = tf.identity(upsampled_flow, name="final_prediction")
+        gt_flow = tf.identity(args[2], name="gt_flow")
 
-        tf.summary.image(name="flow_prediction", tensor=visualize_flow(final_prediction), max_outputs=3)
+        # Outer Images visualized in tensorboard
+        tf.summary.image(args[0], name="left_image")
+        tf.summary.image(args[1], name="right_image")
+
+
+        # tf.summary.image(name="flow_prediction", tensor=visualize_flow(final_prediction), max_outputs=3)
 
         epe = tf.reduce_mean(tf.norm(final_prediction - args[2], axis=3))
         add_moving_summary(epe)
@@ -186,7 +191,7 @@ if __name__ == "__main__":
         model=model,
         dataflow=df,
         max_epoch=10,
-        callbacks= [ModelSaver(),
+        callbacks= [ModelSaver(), FlowVisualisationCallback(["final_prediction", "gt_flow"])
                     ],
         steps_per_epoch=df.size(),
         nr_tower=len(args.gpus.split(','))

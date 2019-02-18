@@ -10,12 +10,12 @@ class FlowVisualisationCallback(Callback):
         :param names: Names of the flow maps to visualize
         """
         self.names = names
-        intermediate_flows_0 = ["flow_" + str(x) + "_0" for x in range(1,8)]
-        intermediate_flows_1 = ["flow_" + str(x) + "_1" for x in range(1,8)]
-        names = names + intermediate_flows_0
-        names = names + intermediate_flows_1
-        print("Printing flow names")
-        print(names)
+        # intermediate_flows_0 = ["flow_" + str(x) + "_0" for x in range(1,8)]
+        # intermediate_flows_1 = ["flow_" + str(x) + "_1" for x in range(1,8)]
+        # names = names + intermediate_flows_0
+        # names = names + intermediate_flows_1
+        # print("Printing flow names")
+        # print(names)
 
 
     def visualize_flow(self, flow):
