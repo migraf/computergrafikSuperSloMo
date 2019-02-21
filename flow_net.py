@@ -121,6 +121,8 @@ class FlowNetModel(ModelDesc):
 
         upconv4 = tf.layers.conv2d_transpose(concat, 256, kernel_size=5, strides=(1,1), padding="valid",
                                              activation=tf.nn.relu, name="upconv4")
+        print("Upconv4 shape")
+        print(upconv4.shape)
         concat = tf.concat([upconv4, conv_4_1, flow_5_up], axis=3)
         predict_flow4 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow4")
