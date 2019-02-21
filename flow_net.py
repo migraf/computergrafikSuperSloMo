@@ -50,7 +50,7 @@ class FlowNetModel(ModelDesc):
             for k2 in range(0, D):
                 start_w = k2 * stride_2
                 s = tf.slice(inb, [0, start_h, start_w, 0], [-1, h, w, -1])
-                ans = tf.reduce_mean(ina * s, axis=1, keepdims=True)
+                ans = tf.reduce_mean(ina * s, axis=3, keepdims=True)
                 res.append(ans)
         res = tf.concat(res, axis=3)  # ND^2HW
         return res
