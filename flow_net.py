@@ -60,19 +60,19 @@ class FlowNetModel(ModelDesc):
         print(args)
 
         # Left channel of correlated flow net architecture, figure2 in Paper
-        left_channel = tf.layers.conv2d(args[0], 64, kernel_size=7, strides=(2,2),
+        left_channel = tf.layers.conv2d(tf.pad(args[0], [[0,0], [3,3], [3,3], [0,0]]), 64, kernel_size=7, strides=(2,2),
                                         activation=tf.nn.relu, name="left_conv0", padding="valid")
-        left_conv1 = tf.layers.conv2d(left_channel, 128, kernel_size=5, strides=(2,2),
+        left_conv1 = tf.layers.conv2d(tf.pad(left_channel, [[0,0], [2,2], [2,2], [0,0]]), 128, kernel_size=5, strides=(2,2),
                                         activation=tf.nn.relu, name="left_conv1", padding="valid")
-        left_conv2 = tf.layers.conv2d(left_conv1, 256, kernel_size=5, strides=(2,2),
+        left_conv2 = tf.layers.conv2d(tf.pad(left_conv1, [[0,0], [2,2], [2,2], [0,0]]), 256, kernel_size=5, strides=(2,2),
                                         activation=tf.nn.relu, name="left_conv2", padding="valid")
 
         # Right channel of correlated flow net architecture, figure2 in Paper
-        right_channel = tf.layers.conv2d(args[1], 64, kernel_size=7, strides=(2,2),
+        right_channel = tf.layers.conv2d(tf.pad(args[1], [[0,0], [3,3], [3,3], [0,0]]), 64, kernel_size=7, strides=(2,2),
                                         activation=tf.nn.relu, name="right_conv0", padding="valid")
-        right_conv1 = tf.layers.conv2d(right_channel, 128, kernel_size=5, strides=(2,2),
+        right_conv1 = tf.layers.conv2d(tf.pad(right_channel, [[0,0], [2,2], [2,2], [0,0]]), 128, kernel_size=5, strides=(2,2),
                                         activation=tf.nn.relu, name="right_conv1", padding="valid")
-        right_conv2 = tf.layers.conv2d(right_conv1, 256, kernel_size=5, strides=(2,2),
+        right_conv2 = tf.layers.conv2d(tf.pad(right_conv1, [[0,0], [2,2], [2,2], [0,0]]), 256, kernel_size=5, strides=(2,2),
                                         activation=tf.nn.relu, name="right_conv2", padding="valid")
 
 
