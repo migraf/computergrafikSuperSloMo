@@ -61,21 +61,20 @@ class FlowNetModel(ModelDesc):
 
         # Left channel of correlated flow net architecture, figure2 in Paper
         left_channel = tf.layers.conv2d(args[0], 64, kernel_size=7, strides=(2,2),
-                                        activation=tf.nn.relu, name="left_conv0", padding="same")
+                                        activation=tf.nn.relu, name="left_conv0", padding="valid")
         left_conv1 = tf.layers.conv2d(left_channel, 128, kernel_size=5, strides=(2,2),
-                                        activation=tf.nn.relu, name="left_conv1", padding="same")
+                                        activation=tf.nn.relu, name="left_conv1", padding="valid")
         left_conv2 = tf.layers.conv2d(left_conv1, 256, kernel_size=5, strides=(2,2),
-                                        activation=tf.nn.relu, name="left_conv2", padding="same")
+                                        activation=tf.nn.relu, name="left_conv2", padding="valid")
 
         # Right channel of correlated flow net architecture, figure2 in Paper
         right_channel = tf.layers.conv2d(args[1], 64, kernel_size=7, strides=(2,2),
-                                        activation=tf.nn.relu, name="right_conv0", padding="same")
+                                        activation=tf.nn.relu, name="right_conv0", padding="valid")
         right_conv1 = tf.layers.conv2d(right_channel, 128, kernel_size=5, strides=(2,2),
-                                        activation=tf.nn.relu, name="right_conv1", padding="same")
+                                        activation=tf.nn.relu, name="right_conv1", padding="valid")
         right_conv2 = tf.layers.conv2d(right_conv1, 256, kernel_size=5, strides=(2,2),
-                                        activation=tf.nn.relu, name="right_conv2", padding="same")
+                                        activation=tf.nn.relu, name="right_conv2", padding="valid")
 
-        # TODO check shapes of correlation
 
         corr = self.correlation(left_conv2, right_conv2, 1, 20, 1, 2, 20, "NHWC")
 
@@ -87,62 +86,63 @@ class FlowNetModel(ModelDesc):
         print(left_conv2.shape)
 
         left_conv_input = tf.layers.conv2d(left_conv2, 32, kernel_size=1, strides=(1,1),
-                                        activation=tf.nn.relu, name="left_conv_input", padding="same")
+                                        activation=tf.nn.relu, name="left_conv_input", padding="valid")
 
         # Contracting Part of the architecture
 
         corr_conc = tf.concat([corr, left_conv_input], axis=3)
 
-        conv_3_1 = tf.layers.conv2d(corr_conc, 256, kernel_size=3, strides=(1,1), padding="same",
+        conv_3_1 = tf.layers.conv2d(corr_conc, 256, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_3_1")
-        conv4 = tf.layers.conv2d(conv_3_1, 512, kernel_size=3, strides=(1,1), padding="same",
+        conv4 = tf.layers.conv2d(conv_3_1, 512, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_4")
 
-        conv_4_1 = tf.layers.conv2d(conv4, 512, kernel_size=3, strides=(1, 1), padding="same",
+        conv_4_1 = tf.layers.conv2d(conv4, 512, kernel_size=3, strides=(1, 1), padding="valid",
                          activation=tf.nn.relu, name="conv_4_1")
 
-        conv5 = tf.layers.conv2d(conv_4_1, 512, kernel_size=3, strides=(1,1), padding="same",
+        conv5 = tf.layers.conv2d(conv_4_1, 512, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_5")
 
-        conv_5_1 = tf.layers.conv2d(conv5, 512, kernel_size=3, strides=(1,1), padding="same",
+        conv_5_1 = tf.layers.conv2d(conv5, 512, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_5_1")
 
-        conv6 = tf.layers.conv2d(conv_5_1, 1024, kernel_size=3, strides=(1,1), padding="same",
+        conv6 = tf.layers.conv2d(conv_5_1, 1024, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_4_0")
 
         # Extracting Part of the architecture
+        # TODO shapes? change padding
 
-        upconv5 = tf.layers.conv2d_transpose(conv6, 512, kernel_size=5, strides=(2,2), padding="same",
+        upconv5 = tf.layers.conv2d_transpose(conv6, 512, kernel_size=5, strides=(2,2), padding="valid",
                                              activation=tf.nn.relu, name="upconv5")
         concat = tf.concat([upconv5, conv_5_1], axis=3)
-        predict_flow5 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="same",
+        predict_flow5 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow5")
         # tf.summary.image(name="flow5", tensor=visualize_flow(predict_flow5), max_outputs=3)
 
         # Second Flow prediction
 
-        upconv4 = tf.layers.conv2d_transpose(concat, 256, kernel_size=1, strides=(1,1), padding="same",
+        upconv4 = tf.layers.conv2d_transpose(concat, 256, kernel_size=1, strides=(1,1), padding="valid",
                                              activation=tf.nn.relu, name="upconv4")
         concat = tf.concat([upconv4, conv_4_1, predict_flow5], axis=3)
-        predict_flow4 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="same",
+        predict_flow4 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow4")
         # tf.summary.image(name="flow4", tensor=visualize_flow(predict_flow4), max_outputs=3)
 
         # Third Flow
 
-        upconv3 = tf.layers.conv2d_transpose(concat, 128, kernel_size=1, strides=(1,1), padding="same",
+        upconv3 = tf.layers.conv2d_transpose(concat, 128, kernel_size=1, strides=(1,1), padding="valid",
                                              activation=tf.nn.relu, name="upconv3")
         concat = tf.concat([upconv3, conv_3_1, predict_flow4], axis=3)
-        predict_flow3 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="same",
+        predict_flow3 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow3")
         # tf.summary.image(name="flow3", tensor=visualize_flow(predict_flow3), max_outputs=3)
 
         # Final Flow
 
-        upconv2 = tf.layers.conv2d_transpose(concat, 64, kernel_size=1, strides=(1,1), padding="same",
+        upconv2 = tf.layers.conv2d_transpose(concat, 64, kernel_size=1, strides=(1,1), padding="valid",
                                              activation=tf.nn.relu, name="upconv2")
         concat = tf.concat([upconv2, conv_5_1, predict_flow4], axis=3)
-        final_flow = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="same",
+        final_flow = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow3")
 
         # Use nearest neighbur upsampling to get the correct shape upsampling on output
