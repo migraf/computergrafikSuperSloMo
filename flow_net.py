@@ -79,11 +79,6 @@ class FlowNetModel(ModelDesc):
         corr = self.correlation(left_conv2, right_conv2, 1, 20, 1, 2, 20, "NHWC")
 
         corr = tf.nn.relu(corr)
-        print("Corr shape")
-        print(corr.shape)
-
-        print("Left conv shape: ")
-        print(left_conv2.shape)
 
         left_conv_input = tf.layers.conv2d(left_conv2, 32, kernel_size=1, strides=(1,1),
                                         activation=tf.nn.relu, name="left_conv_input", padding="valid")
@@ -94,18 +89,23 @@ class FlowNetModel(ModelDesc):
 
         conv_3_1 = tf.layers.conv2d(corr_conc, 256, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_3_1")
+
+        print(conv_3_1.shape)
         conv4 = tf.layers.conv2d(conv_3_1, 512, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_4")
-
+        print(conv4.shape)
         conv_4_1 = tf.layers.conv2d(conv4, 512, kernel_size=3, strides=(1, 1), padding="valid",
                          activation=tf.nn.relu, name="conv_4_1")
+        print(conv_4_1.shape)
 
         conv5 = tf.layers.conv2d(conv_4_1, 512, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_5")
+        print(conv5.shape)
 
         conv_5_1 = tf.layers.conv2d(conv5, 512, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_5_1")
 
+        print(conv_5_1.shape)
         conv6 = tf.layers.conv2d(conv_5_1, 1024, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_4_0")
 
