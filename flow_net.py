@@ -112,7 +112,7 @@ class FlowNetModel(ModelDesc):
         # Extracting Part of the architecture
         # TODO shapes? change padding
 
-        upconv5 = tf.layers.conv2d_transpose(conv6, 512, kernel_size=5, strides=(2,2), padding="valid",
+        upconv5 = tf.layers.conv2d_transpose(conv6, 512, kernel_size=5, strides=(2,2), padding="same",
                                              activation=tf.nn.relu, name="upconv5")
         concat = tf.concat([upconv5, conv_5_1], axis=3)
         predict_flow5 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
