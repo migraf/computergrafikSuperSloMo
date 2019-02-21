@@ -108,6 +108,7 @@ class FlowNetModel(ModelDesc):
         print(conv_5_1.shape)
         conv6 = tf.layers.conv2d(tf.pad(conv_5_1, [[0,0], [1,1], [1,1], [0,0]]), 1024, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_4_0")
+        print(conv6.shape)
 
         # Extracting Part of the architecture
         # TODO shapes? change padding
