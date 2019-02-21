@@ -110,6 +110,11 @@ class FlowNetModel(ModelDesc):
         predict_flow5 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow5")
         flow_5_up = tf.layers.conv2d_transpose(predict_flow5, 2, 5, 1)
+
+        print("Predict flow shape:")
+        print(predict_flow5.shape)
+        print("Upflow shape")
+        print(flow_5_up.shape)
         # tf.summary.image(name="flow5", tensor=visualize_flow(predict_flow5), max_outputs=3)
 
         # Second Flow prediction
