@@ -117,33 +117,36 @@ class FlowNetModel(ModelDesc):
         concat = tf.concat([upconv5, conv_5_1], axis=3)
         predict_flow5 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow5")
+        flow_5_up = tf.layers.conv2d_transpose(predict_flow5, 2, 4, 1)
         # tf.summary.image(name="flow5", tensor=visualize_flow(predict_flow5), max_outputs=3)
 
         # Second Flow prediction
 
         upconv4 = tf.layers.conv2d_transpose(concat, 256, kernel_size=1, strides=(1,1), padding="valid",
                                              activation=tf.nn.relu, name="upconv4")
-        concat = tf.concat([upconv4, conv_4_1, predict_flow5], axis=3)
+        concat = tf.concat([upconv4, conv_4_1, flow_5_up], axis=3)
         predict_flow4 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow4")
+        flow_4_up = tf.layers.conv2d_transpose(predict_flow4, 2, 4, 1)
         # tf.summary.image(name="flow4", tensor=visualize_flow(predict_flow4), max_outputs=3)
 
         # Third Flow
 
         upconv3 = tf.layers.conv2d_transpose(concat, 128, kernel_size=1, strides=(1,1), padding="valid",
                                              activation=tf.nn.relu, name="upconv3")
-        concat = tf.concat([upconv3, conv_3_1, predict_flow4], axis=3)
+        concat = tf.concat([upconv3, conv_3_1, flow_4_up], axis=3)
         predict_flow3 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow3")
+        flow_3_up = tf.layers.conv2d_transpose(predict_flow3, 2, 4, 1)
         # tf.summary.image(name="flow3", tensor=visualize_flow(predict_flow3), max_outputs=3)
 
         # Final Flow
 
         upconv2 = tf.layers.conv2d_transpose(concat, 64, kernel_size=1, strides=(1,1), padding="valid",
                                              activation=tf.nn.relu, name="upconv2")
-        concat = tf.concat([upconv2, conv_5_1, predict_flow4], axis=3)
+        concat = tf.concat([upconv2, conv_5_1, flow_3_up], axis=3)
         final_flow = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
-                                         activation=tf.identity, name="flow3")
+                                         activation=tf.identity, name="final_flow")
 
         # Use nearest neighbur upsampling to get the correct shape upsampling on output
 
@@ -161,7 +164,7 @@ class FlowNetModel(ModelDesc):
 
         # tf.summary.image(name="flow_prediction", tensor=visualize_flow(final_prediction), max_outputs=3)
 
-        epe = tf.reduce_mean(tf.norm(final_prediction - args[2], axis=3))
+        epe = tf.reduce_mean(tf.norm(final_prediction - gt_flow, axis=3))
         add_moving_summary(epe)
 
         self.cost = epe
