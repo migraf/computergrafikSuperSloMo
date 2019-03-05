@@ -161,7 +161,7 @@ class FlowNetModel(ModelDesc):
 
         print("Concat shape: {}".format(concat.shape))
 
-        predict_flow3 = tf.layers.conv2d(tf.pad(concat, [[0,0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(2,2), padding="valid",
+        predict_flow3 = tf.layers.conv2d(tf.pad(concat, [[0,0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(1,1), padding="valid",
                                          activation=tf.identity, name="flow3")
         print("Predict flow 3 shape: {}".format(predict_flow3.shape))
 
