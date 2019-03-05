@@ -184,7 +184,7 @@ class FlowNetModel(ModelDesc):
 
         print("Final flow shape: {}".format(final_flow.shape))
 
-        new_shape =(int(final_flow.shape[1])*4, int(final_flow.shape[2])*4)
+        new_shape =(int(final_flow.shape[1])*8, int(final_flow.shape[2])*8)
         print("Final shape: {}".format(new_shape))
 
 
