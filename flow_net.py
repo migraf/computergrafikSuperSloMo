@@ -140,8 +140,6 @@ class FlowNetModel(ModelDesc):
         print("Upconv4 shape")
         print(upconv4.shape)
 
-        # TODO continue shape checking here
-
         concat = tf.concat([upconv4, conv_4_1, flow_5_up], axis=3)
         predict_flow4 = tf.layers.conv2d(tf.pad(concat, [[0,0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(1,1), padding="valid",
                                          activation=tf.identity, name="flow4")
@@ -159,11 +157,14 @@ class FlowNetModel(ModelDesc):
 
         print("UpConv 3 shape: {}".format(upconv3.shape))
 
-
         concat = tf.concat([upconv3, conv_3_1, flow_4_up], axis=3)
-        predict_flow3 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
+
+        # TODO continue shape checking here
+
+        predict_flow3 = tf.layers.conv2d(tf.pad(concat, [[0,0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow3")
-        flow_3_up = tf.layers.conv2d_transpose(predict_flow3, 2, 5, 1)
+        flow_3_up = tf.layers.conv2d_transpose(predict_flow3, 2, kernel_size=4, strides=(2,2), padding="same",
+                                               activation=tf.identity, name="flow_3_up")
         # tf.summary.image(name="flow3", tensor=visualize_flow(predict_flow3), max_outputs=3)
 
         # Final Flow
@@ -171,7 +172,7 @@ class FlowNetModel(ModelDesc):
         upconv2 = tf.layers.conv2d_transpose(concat, 64, kernel_size=5, strides=(1,1), padding="valid",
                                              activation=tf.nn.relu, name="upconv2")
         concat = tf.concat([upconv2, conv_5_1, flow_3_up], axis=3)
-        final_flow = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
+        final_flow = tf.layers.conv2d(tf.pad(concat, [[0,0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="final_flow")
 
         # Use nearest neighbur upsampling to get the correct shape upsampling on output
