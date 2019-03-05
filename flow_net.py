@@ -143,7 +143,7 @@ class FlowNetModel(ModelDesc):
         # TODO continue shape checking here
 
         concat = tf.concat([upconv4, conv_4_1, flow_5_up], axis=3)
-        predict_flow4 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(1,1), padding="valid",
+        predict_flow4 = tf.layers.conv2d(tf.pad(concat, [[0,0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(1,1), padding="valid",
                                          activation=tf.identity, name="flow4")
 
         print("predictflow 4 shape: {}".format(predict_flow4.shape))
