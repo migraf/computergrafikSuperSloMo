@@ -171,7 +171,7 @@ class FlowNetModel(ModelDesc):
 
         upconv2 = tf.layers.conv2d_transpose(concat, 64, kernel_size=5, strides=(1,1), padding="valid",
                                              activation=tf.nn.relu, name="upconv2")
-        concat = tf.concat([upconv2, conv_5_1, flow_3_up], axis=3)
+        concat = tf.concat([upconv2, left_conv2, flow_3_up], axis=3)
         final_flow = tf.layers.conv2d(tf.pad(concat, [[0,0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="final_flow")
 
