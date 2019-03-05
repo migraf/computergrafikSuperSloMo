@@ -159,12 +159,17 @@ class FlowNetModel(ModelDesc):
 
         concat = tf.concat([upconv3, conv_3_1, flow_4_up], axis=3)
 
-
+        print("Concat shape: {}".format(concat.shape))
 
         predict_flow3 = tf.layers.conv2d(tf.pad(concat, [[0,0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow3")
+        print("Predict flow 3 shape: {}".format(predict_flow3.shape))
+
+
         flow_3_up = tf.layers.conv2d_transpose(predict_flow3, 2, kernel_size=4, strides=(2,2), padding="same",
                                                activation=tf.identity, name="flow_3_up")
+
+        print("Flow 3 up shape: {}".format(flow_3_up.shape))
         # tf.summary.image(name="flow3", tensor=visualize_flow(predict_flow3), max_outputs=3)
 
         # Final Flow
