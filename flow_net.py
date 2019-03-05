@@ -123,9 +123,9 @@ class FlowNetModel(ModelDesc):
         concat = tf.concat([upconv5, conv_5_1], axis=3)
 
 
-        predict_flow5 = tf.layers.conv2d(tf.pad(concat, [[0, 0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(1,1), padding="valid",
+        predict_flow5 = tf.layers.conv2d(tf.pad(concat, [[0, 0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(1,1), padding="same",
                                          activation=tf.identity, name="flow5")
-        flow_5_up = tf.layers.conv2d_transpose(predict_flow5, 2, kernel_size=4,strides=(2,2),activation=tf.identity)
+        flow_5_up = tf.layers.conv2d_transpose(predict_flow5, 2, kernel_size=4,strides=(2,2), padding="same", activation=tf.identity)
 
         print("Predict flow shape:")
         print(predict_flow5.shape)
