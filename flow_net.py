@@ -104,7 +104,7 @@ class FlowNetModel(ModelDesc):
 
         # Extracting Part of the architecture
 
-        upconv5 = tf.layers.conv2d_transpose(conv6, 512, kernel_size=5, strides=(1,1), padding="same",
+        upconv5 = tf.layers.conv2d_transpose(conv6, 512, kernel_size=5, strides=(2,2), padding="valid",
                                              activation=tf.nn.relu, name="upconv5")
 
 
