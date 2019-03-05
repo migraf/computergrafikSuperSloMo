@@ -121,7 +121,7 @@ class FlowNetModel(ModelDesc):
 
         concat = tf.concat([upconv5, conv_5_1], axis=3)
 
-        # TODO continue shape checking here
+
 
         predict_flow5 = tf.layers.conv2d(tf.pad(concat, [[0, 0], [2,2], [2,2], [0,0]]), 2, kernel_size=5, strides=(1,1), padding="valid",
                                          activation=tf.identity, name="flow5")
@@ -139,16 +139,27 @@ class FlowNetModel(ModelDesc):
                                              activation=tf.nn.relu, name="upconv4")
         print("Upconv4 shape")
         print(upconv4.shape)
+
+        # TODO continue shape checking here
+
         concat = tf.concat([upconv4, conv_4_1, flow_5_up], axis=3)
         predict_flow4 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(1,1), padding="valid",
                                          activation=tf.identity, name="flow4")
-        flow_4_up = tf.layers.conv2d_transpose(predict_flow4, 2, 5, strides=(2,2))
+
+        print("predictflow 4 shape: {}".format(predict_flow4.shape))
+        flow_4_up = tf.layers.conv2d_transpose(predict_flow4, 2, kernel_size=4, strides=(2,2), padding="same",
+                                               activation=tf.identity, name="flow_4_up")
         # tf.summary.image(name="flow4", tensor=visualize_flow(predict_flow4), max_outputs=3)
+        print("flow 4 up shape: {}".format(flow_4_up.shape))
 
         # Third Flow
 
-        upconv3 = tf.layers.conv2d_transpose(concat, 128, kernel_size=5, strides=(1,1), padding="valid",
+        upconv3 = tf.layers.conv2d_transpose(concat, 128, kernel_size=5, strides=(2,2), padding="same",
                                              activation=tf.nn.relu, name="upconv3")
+
+        print("UpConv 3 shape: {}".format(upconv3.shape))
+
+
         concat = tf.concat([upconv3, conv_3_1, flow_4_up], axis=3)
         predict_flow3 = tf.layers.conv2d(concat, 2, kernel_size=5, strides=(2,2), padding="valid",
                                          activation=tf.identity, name="flow3")
