@@ -183,6 +183,7 @@ class FlowNetModel(ModelDesc):
         # Use nearest neighbur upsampling to get the correct shape upsampling on output
 
         new_shape =(final_flow.shape[1], final_flow.shape[2])
+        print("Final shape: {}".format(new_shape))
 
 
         upsampled_flow = tf.image.resize_nearest_neighbor(tf.multiply(final_flow, 20) ,  new_shape)
