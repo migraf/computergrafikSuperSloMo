@@ -90,17 +90,27 @@ class FlowNetModel(ModelDesc):
         conv_3_1 = tf.layers.conv2d(tf.pad(corr_conc,[[0,0], [1,1], [1,1], [0,0]]), 256, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_3_1")
 
-        conv4 = tf.layers.conv2d(tf.pad(conv_3_1, [[0,0], [1,1], [1,1], [0,0]]), 512, kernel_size=3, strides=(1,1), padding="valid",
+        print("Conv 3_1 shape: {}".format(conv_3_1.shape))
+
+        conv4 = tf.layers.conv2d(tf.pad(conv_3_1, [[0,0], [1,1], [1,1], [0,0]]), 512, kernel_size=3, strides=(2,2), padding="valid",
                                     activation=tf.nn.relu, name="conv_4")
+
+        print("Conv 4 shape: {}".format(conv4.shape))
+
         conv_4_1 = tf.layers.conv2d(tf.pad(conv4, [[0,0], [1,1], [1,1], [0,0]]), 512, kernel_size=3, strides=(1, 1), padding="valid",
                          activation=tf.nn.relu, name="conv_4_1")
+        print("Conv 4_1 shape: {}".format(conv_4_1.shape))
 
-        conv5 = tf.layers.conv2d(tf.pad(conv_4_1, [[0,0], [1,1], [1,1], [0,0]]), 512, kernel_size=3, strides=(1,1), padding="valid",
+        conv5 = tf.layers.conv2d(tf.pad(conv_4_1, [[0,0], [1,1], [1,1], [0,0]]), 512, kernel_size=3, strides=(2,2), padding="valid",
                                     activation=tf.nn.relu, name="conv_5")
+        print("Conv 5 shape: {}".format(conv5.shape))
         conv_5_1 = tf.layers.conv2d(tf.pad(conv5 ,[[0,0], [1,1], [1,1], [0,0]]), 512, kernel_size=3, strides=(1,1), padding="valid",
                                     activation=tf.nn.relu, name="conv_5_1")
-        conv6 = tf.layers.conv2d(tf.pad(conv_5_1, [[0,0], [1,1], [1,1], [0,0]]), 1024, kernel_size=3, strides=(1,1), padding="valid",
+        print("Conv 5_1 shape: {}".format(conv_5_1.shape))
+        conv6 = tf.layers.conv2d(tf.pad(conv_5_1, [[0,0], [1,1], [1,1], [0,0]]), 1024, kernel_size=3, strides=(2,2), padding="valid",
                                     activation=tf.nn.relu, name="conv_4_0")
+
+        print("Conv 6 shape: {}".format(conv6.shape))
 
         # Extracting Part of the architecture
 
