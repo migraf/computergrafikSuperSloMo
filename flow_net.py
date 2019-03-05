@@ -187,6 +187,8 @@ class FlowNetModel(ModelDesc):
 
         upsampled_flow = tf.image.resize_nearest_neighbor(tf.multiply(final_flow, 20) ,  new_shape)
 
+        print("Upsampled flow shape: [{}".format(upsampled_flow.shape))
+
         # Flows to visualize in tensorboard
         final_prediction = tf.identity(upsampled_flow, name="final_prediction")
         gt_flow = tf.identity(args[2], name="gt_flow")
