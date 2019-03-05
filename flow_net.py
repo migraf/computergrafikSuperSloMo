@@ -192,8 +192,8 @@ class FlowNetModel(ModelDesc):
         gt_flow = tf.identity(args[2], name="gt_flow")
 
         # Outer Images visualized in tensorboard
-        tf.summary.image(args[0], name="left_image")
-        tf.summary.image(args[1], name="right_image")
+        tf.summary.image("left_image", args[0])
+        tf.summary.image("right_image", args[1])
 
 
         # tf.summary.image(name="flow_prediction", tensor=visualize_flow(final_prediction), max_outputs=3)
