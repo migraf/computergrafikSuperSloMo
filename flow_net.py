@@ -15,7 +15,7 @@ class FlowNetModel(ModelDesc):
         self.height = height
         self.width = width
         self.num_batches = num_batches
-        self.lr = GraphVarParam(name="lr").set_value(1e-6)
+        self.lr = tf.get_variable("lr", trainable=False, initializer=1e-6)
 
     def inputs(self):
         return [tf.placeholder(tf.float32, (self.num_batches, self.height, self.width, 3), name="left_image"),
