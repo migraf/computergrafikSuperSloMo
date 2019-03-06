@@ -229,7 +229,7 @@ if __name__ == "__main__":
 
 
     df1 = FlownetDataflow(args.file_path)
-    df = BatchData(df, args.num_batches)
+    df = BatchData(df, int(args.num_batches))
 
     # Steps at which to increase the learning rate
 
