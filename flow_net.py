@@ -15,6 +15,7 @@ class FlowNetModel(ModelDesc):
         self.height = height
         self.width = width
         self.num_batches = num_batches
+        self.lr = GraphVarParam(name="lr").set_value(1e-6)
 
     def inputs(self):
         return [tf.placeholder(tf.float32, (self.num_batches, self.height, self.width, 3), name="left_image"),
@@ -211,7 +212,7 @@ class FlowNetModel(ModelDesc):
         return self.cost
 
     def optimizer(self):
-        return tf.train.AdamOptimizer(0.0001)
+        return tf.train.AdamOptimizer(self.lr)
 
 
 
@@ -230,12 +231,17 @@ if __name__ == "__main__":
     df1 = FlownetDataflow(args.file_path)
     df = BatchData(df, args.num_batches)
 
+    # Steps at which to increase the learning rate
+
+
     model = FlowNetModel("flownet", df1.height, df1.width, args.num_batches)
+    lr_increase_schedule = [(10000, 1e-4), (300000, (1e-4)/2), (400000, (1e-4)/4), (500000, (1e-4)/8)]
     config = TrainConfig(
         model=model,
         dataflow=df,
-        max_epoch=10,
-        callbacks= [ModelSaver(), FlowVisualisationCallback(["final_prediction", "gt_flow"])
+        max_epoch=15,
+        callbacks= [ModelSaver(), FlowVisualisationCallback(["final_prediction", "gt_flow"]),
+                    ScheduledHyperParamSetter("lr", lr_increase_schedule, step_based=True)
                     ],
         steps_per_epoch=df.size(),
         nr_tower=len(args.gpus.split(','))
