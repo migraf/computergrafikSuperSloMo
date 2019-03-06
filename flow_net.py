@@ -205,6 +205,7 @@ class FlowNetModel(ModelDesc):
         # tf.summary.image(name="flow_prediction", tensor=visualize_flow(final_prediction), max_outputs=3)
 
         epe = tf.reduce_mean(tf.norm(final_prediction - gt_flow, axis=3))
+        print("Error shape: {}".format(epe.shape))
         add_moving_summary(epe)
 
         self.cost = epe
@@ -239,7 +240,7 @@ if __name__ == "__main__":
     config = TrainConfig(
         model=model,
         dataflow=df,
-        max_epoch=15,
+        max_epoch=25,
         callbacks= [ModelSaver(), FlowVisualisationCallback(["final_prediction", "gt_flow"]),
                     ScheduledHyperParamSetter("lr", lr_increase_schedule, step_based=True)
                     ],
