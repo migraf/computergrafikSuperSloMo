@@ -235,7 +235,7 @@ if __name__ == "__main__":
 
     model = FlowNetModel("flownet", df1.height, df1.width, int(args.num_batches))
     df = QueueInput(df)
-    df = StagingInput(df, nr_stage=1)
+    # df = StagingInput(df, nr_stage=1)
 
     config = TrainConfig(
         model=model,
