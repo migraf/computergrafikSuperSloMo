@@ -235,7 +235,7 @@ if __name__ == "__main__":
 
     model = FlowNetModel("flownet", df1.height, df1.width, int(args.num_batches))
     df = QueueInput(df)
-    # df = StagingInput(df, nr_stage=1)
+    df = StagingInput(df, nr_stage=1)
 
     config = TrainConfig(
         model=model,
@@ -244,7 +244,7 @@ if __name__ == "__main__":
         callbacks= [ModelSaver(), FlowVisualisationCallback(["final_prediction", "gt_flow"]),
                     ScheduledHyperParamSetter("lr", lr_increase_schedule, step_based=True)
                     ],
-        steps_per_epoch=df.size()/3,
+        steps_per_epoch=df1.size()/3,
     )
     trainer = SyncMultiGPUTrainerReplicated([0,1,2])
     launch_train_with_config(config, trainer)
