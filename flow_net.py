@@ -246,7 +246,7 @@ if __name__ == "__main__":
                     ],
         steps_per_epoch=df.size(),
     )
-    trainer = SyncMultiGPUTrainer([0,1,2])
+    trainer = SyncMultiGPUTrainerReplicated([0,1,2])
     launch_train_with_config(config, trainer)
 
 
