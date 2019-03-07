@@ -245,9 +245,8 @@ if __name__ == "__main__":
                     ScheduledHyperParamSetter("lr", lr_increase_schedule, step_based=True)
                     ],
         steps_per_epoch=df.size(),
-        nr_tower=len(args.gpus.split(','))
     )
-    trainer = SyncMultiGPUTrainer(config.nr_tower)
+    trainer = SyncMultiGPUTrainer([0,1,2])
     launch_train_with_config(config, trainer)
 
 
