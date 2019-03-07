@@ -228,14 +228,14 @@ if __name__ == "__main__":
 
     logger.auto_set_dir()
 
-    df = FlownetDataflow(args.file_path)
-    df = BatchData(df, int(args.num_batches))
+    df1 = FlownetDataflow(args.file_path)
+    df = BatchData(df1, int(args.num_batches))
 
 
     # Steps at which to increase the learning rate
 
 
-    model = FlowNetModel("flownet", df.height, df.width, int(args.num_batches))
+    model = FlowNetModel("flownet", df1.height, df1.width, int(args.num_batches))
     df = QueueInput(df)
     df = StagingInput(df)
     lr_increase_schedule = [(10000, 1e-4), (300000, (1e-4)/2), (400000, (1e-4)/4), (500000, (1e-4)/8)]
