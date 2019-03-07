@@ -236,7 +236,7 @@ if __name__ == "__main__":
     # Steps at which to increase the learning rate
 
 
-    model = FlowNetModel("flownet", df1.height, df1.width, int(args.num_batches))
+    model = FlowNetModel("flownet", df.height, df.width, int(args.num_batches))
     lr_increase_schedule = [(10000, 1e-4), (300000, (1e-4)/2), (400000, (1e-4)/4), (500000, (1e-4)/8)]
     config = TrainConfig(
         model=model,
