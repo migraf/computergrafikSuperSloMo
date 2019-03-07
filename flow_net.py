@@ -234,8 +234,8 @@ if __name__ == "__main__":
     lr_increase_schedule = [(10000, 1e-4), (300000, (1e-4)/2), (400000, (1e-4)/4), (500000, (1e-4)/8)]
 
     model = FlowNetModel("flownet", df1.height, df1.width, int(args.num_batches))
-    df = QueueInput(df)
-    df = StagingInput(df, nr_stage=1)
+    # df = QueueInput(df)
+    # df = StagingInput(df, nr_stage=1)
 
     config = TrainConfig(
         model=model,
