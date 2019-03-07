@@ -375,7 +375,7 @@ class FlowModel(ModelDesc):
 
 
     def optimizer(self):
-        return tf.train.AdamOptimizer(0.0001)
+        return tf.train.AdamOptimizer(0.00001)
 
 
 

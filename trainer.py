@@ -12,11 +12,11 @@ from callbacks import *
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", help="directory containing the training images")
-    parser.add_argument("--lmdb_path", help="Path of the lmdb file")
+    parser.add_argument("--lmdb_path", help="Path of the lmdb file", default="/graphics/scratch/students/graf/data/all.lmdb")
     parser.add_argument("--image_size", help="size to scale the images to", default=512)
     parser.add_argument("--num_frames", help="number of intermediate frames", default=8)
     parser.add_argument("--num_batches", default=1)
-    parser.add_argument("--gpus" ,help="comma separated list of gpus to use")
+    parser.add_argument("--gpus" ,help="comma separated list of gpus to use", default="1,2,3")
     # TODO what else do we need
 
     args = parser.parse_args()
