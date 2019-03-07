@@ -244,9 +244,9 @@ if __name__ == "__main__":
         callbacks= [ModelSaver(), FlowVisualisationCallback(["final_prediction", "gt_flow"]),
                     ScheduledHyperParamSetter("lr", lr_increase_schedule, step_based=True)
                     ],
-        steps_per_epoch=df1.size()/3,
+        steps_per_epoch=df1.size(),
     )
-    trainer = SyncMultiGPUTrainer([0,1,2])
+    trainer = SyncMultiGPUTrainer()
     launch_train_with_config(config, trainer)
 
 
