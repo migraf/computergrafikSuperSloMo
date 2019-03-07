@@ -34,8 +34,9 @@ if __name__ == "__main__":
     config = TrainConfig(
         model=model,
         dataflow=df,
-        max_epoch=8,
-        callbacks= [ModelSaver(), FlowVisualisationCallback(["F_0_1", "F_1_0"])
+        max_epoch=15,
+        callbacks= [ModelSaver(), FlowVisualisationCallback(["F_0_1", "F_1_0"]),
+                    ScheduledHyperParamSetter("lr", [()])
                     ],
         steps_per_epoch=df.size(),
         nr_tower=len(args.gpus.split(','))

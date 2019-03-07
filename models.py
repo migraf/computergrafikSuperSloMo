@@ -12,6 +12,7 @@ class FlowModel(ModelDesc):
     def __init__(self, name, num_batches):
         self.name = name
         self.num_batches = num_batches
+        self.lr = tf.get_variable("lr", trainable=False, initializer=1e-4)
 
     def inputs(self):
         return [tf.placeholder(tf.float32, (self.num_batches,128,128,3), name="I_t_" + str(x)) for x in range(8)]
@@ -375,7 +376,7 @@ class FlowModel(ModelDesc):
 
 
     def optimizer(self):
-        return tf.train.AdamOptimizer(0.00001)
+        return tf.train.AdamOptimizer(self.lr)
 
 
 
