@@ -216,7 +216,6 @@ class FlowNetModel(ModelDesc):
         return tf.train.AdamOptimizer(self.lr)
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", help="array containing the training images", default="/graphics/scratch/students/graf/computergrafikSuperSloMo/train_paths.npy")
@@ -231,14 +230,13 @@ if __name__ == "__main__":
     df1 = FlownetDataflow(args.file_path)
     df = BatchData(df1, int(args.num_batches))
 
-
     # Steps at which to increase the learning rate
-
+    lr_increase_schedule = [(10000, 1e-4), (300000, (1e-4)/2), (400000, (1e-4)/4), (500000, (1e-4)/8)]
 
     model = FlowNetModel("flownet", df1.height, df1.width, int(args.num_batches))
     df = QueueInput(df)
-    df = StagingInput(df)
-    lr_increase_schedule = [(10000, 1e-4), (300000, (1e-4)/2), (400000, (1e-4)/4), (500000, (1e-4)/8)]
+    df = StagingInput(df, nr_stage=1)
+
     config = TrainConfig(
         model=model,
         dataflow=df,
