@@ -228,9 +228,10 @@ if __name__ == "__main__":
 
     logger.auto_set_dir()
 
-
-    df1 = FlownetDataflow(args.file_path)
+    df = FlownetDataflow(args.file_path)
     df = BatchData(df, int(args.num_batches))
+    df = QueueInput(df)
+    df = StagingInput(df)
 
     # Steps at which to increase the learning rate
 
@@ -244,7 +245,7 @@ if __name__ == "__main__":
         callbacks= [ModelSaver(), FlowVisualisationCallback(["final_prediction", "gt_flow"]),
                     ScheduledHyperParamSetter("lr", lr_increase_schedule, step_based=True)
                     ],
-        steps_per_epoch=df.size(),
+        steps_per_epoch=df.size()/3,
     )
     trainer = SyncMultiGPUTrainerReplicated([0,1,2])
     launch_train_with_config(config, trainer)
