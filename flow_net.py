@@ -239,7 +239,7 @@ if __name__ == "__main__":
     config = TrainConfig(
         model=model,
         dataflow=df,
-        max_epoch=25,
+        max_epoch=40,
         callbacks= [ModelSaver(), FlowVisualisationCallback(["final_prediction", "gt_flow"]),
                     ScheduledHyperParamSetter("lr", lr_increase_schedule, step_based=True)
                     ],
