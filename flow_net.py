@@ -200,9 +200,9 @@ class FlowNetModel(ModelDesc):
         tf.summary.image("left_image", args[0])
         tf.summary.image("right_image", args[1])
 
-        images_flow = tf.concat([args[0], visualize_flow(final_prediction), args[1]], axis=3)
+        # images_flow = tf.concat([args[0], visualize_flow(final_prediction), args[1]], axis=3)
 
-        tf.summary.image(images_flow, max_outputs=10)
+        # tf.summary.image(images_flow, max_outputs=10)
 
 
         # tf.summary.image(name="flow_prediction", tensor=visualize_flow(final_prediction), max_outputs=3)
@@ -243,7 +243,8 @@ if __name__ == "__main__":
         model=model,
         dataflow=df,
         max_epoch=40,
-        callbacks= [ModelSaver(), FlowVisualisationCallback(["final_prediction", "gt_flow"]),
+        callbacks= [ModelSaver(),
+                    PeriodicCallback(FlowVisualisationCallback(["final_prediction", "gt_flow"]), every_k_steps=10000),
                     ScheduledHyperParamSetter("lr", lr_increase_schedule, step_based=True)
                     ],
         steps_per_epoch=df1.size(),

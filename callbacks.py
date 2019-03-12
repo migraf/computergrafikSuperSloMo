@@ -36,7 +36,7 @@ class FlowVisualisationCallback(Callback):
     def _setup_graph(self):
         self.tensors = self.get_tensors_maybe_in_tower(self.names)
 
-    def _trigger_epoch(self):
+    def _trigger_step(self):
         print("Printing flow names")
         print(self.names)
         for i in range(len(self.tensors)):
