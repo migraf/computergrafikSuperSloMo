@@ -174,7 +174,6 @@ class FlowNetModel(ModelDesc):
         # tf.summary.image(name="flow3", tensor=visualize_flow(predict_flow3), max_outputs=3)
 
         # Final Flow
-        # TODO continue shape checking here
         upconv2 = tf.layers.conv2d_transpose(concat, 64, kernel_size=4, strides=(2,2), padding="same",
                                              activation=tf.nn.relu, name="upconv2")
         concat = tf.concat([upconv2, left_conv1, flow_3_up], axis=3)
@@ -200,6 +199,10 @@ class FlowNetModel(ModelDesc):
         # Outer Images visualized in tensorboard
         tf.summary.image("left_image", args[0])
         tf.summary.image("right_image", args[1])
+
+        images_flow = tf.concat([args[0], visualize_flow(final_prediction), args[1]], axis=3)
+
+        tf.summary.image(images_flow, max_outputs=10)
 
 
         # tf.summary.image(name="flow_prediction", tensor=visualize_flow(final_prediction), max_outputs=3)
