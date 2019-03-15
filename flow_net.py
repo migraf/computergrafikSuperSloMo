@@ -219,38 +219,67 @@ class FlowNetModel(ModelDesc):
         return tf.train.AdamOptimizer(self.lr)
 
 
+
+def inference(saved_model, left_image_path, right_image_path, gt_flow):
+    left_image = cv2.imread(left_image_path)
+    right_image = cv2.imread(right_image_path)
+
+
+    predict_config = PredictConfig(
+        model = FlowNetModel,
+        session_init=get_model_loader(saved_model),
+        input_names=["left_image", "right_image"],
+        output_names=["final_prediction"])
+
+    predictor = OfflinePredictor(predict_config)
+
+
+    
+
+
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--file_path", help="array containing the training images", default="/graphics/scratch/students/graf/computergrafikSuperSloMo/train_paths.npy")
+    parser.add_argument("--file_path", help="array containing the training images",
+                        default="/graphics/scratch/students/graf/computergrafikSuperSloMo/train_paths.npy")
     parser.add_argument("--num_batches", default=1)
     parser.add_argument("--gpus", default="0,1,2,3")
+    parser.add_argument("--test")
 
     args = parser.parse_args()
 
-    logger.auto_set_dir()
 
-    df1 = FlownetDataflow(args.file_path)
-    df = BatchData(df1, int(args.num_batches))
+    if args.test:
+        test_paths = np.load("/graphics/scratch/students/graf/computergrafikSuperSloMo/train_paths.npy")
+        print(test_paths[:5])
 
-    # Steps at which to increase the learning rate
-    lr_increase_schedule = [(10000, 1e-4), (300000, (1e-4)/2), (400000, (1e-4)/4), (500000, (1e-4)/8)]
+    else:
+        logger.auto_set_dir()
 
-    model = FlowNetModel("flownet", df1.height, df1.width, int(args.num_batches))
-    # df = QueueInput(df)
-    # df = StagingInput(df, nr_stage=1)
+        df1 = FlownetDataflow(args.file_path)
+        df = BatchData(df1, int(args.num_batches))
 
-    config = TrainConfig(
-        model=model,
-        dataflow=df,
-        max_epoch=40,
-        callbacks= [ModelSaver(),
-                    PeriodicCallback(FlowVisualisationCallback(["final_prediction", "gt_flow"]), every_k_steps=10000),
-                    ScheduledHyperParamSetter("lr", lr_increase_schedule, step_based=True)
-                    ],
-        steps_per_epoch=df1.size(),
-    )
-    trainer = SyncMultiGPUTrainer(1)
-    launch_train_with_config(config, trainer)
+        # Steps at which to increase the learning rate
+        lr_increase_schedule = [(10000, 1e-4), (300000, (1e-4)/2), (400000, (1e-4)/4), (500000, (1e-4)/8)]
+
+        model = FlowNetModel("flownet", df1.height, df1.width, int(args.num_batches))
+        # df = QueueInput(df)
+        # df = StagingInput(df, nr_stage=1)
+
+        config = TrainConfig(
+            model=model,
+            dataflow=df,
+            max_epoch=40,
+            callbacks= [ModelSaver(),
+                        PeriodicCallback(FlowVisualisationCallback(["final_prediction", "gt_flow"]), every_k_steps=10000),
+                        ScheduledHyperParamSetter("lr", lr_increase_schedule, step_based=True)
+                        ],
+            steps_per_epoch=df1.size(),
+        )
+        trainer = SyncMultiGPUTrainer(1)
+        launch_train_with_config(config, trainer)
 
 
 
