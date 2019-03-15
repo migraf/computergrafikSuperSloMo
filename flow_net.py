@@ -226,7 +226,7 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
 
 
     predict_config = PredictConfig(
-        model = FlowNetModel,
+        model = FlowNetModel(),
         session_init=get_model_loader(saved_model),
         input_names=["left_image", "right_image"],
         output_names=["final_prediction"])
