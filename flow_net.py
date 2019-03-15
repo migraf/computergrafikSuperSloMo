@@ -237,7 +237,7 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
     predictor = OfflinePredictor(predict_config)
 
     flow_prediction = predictor(left_image, right_image)
-    print(flow_prediction)
+    print(flow_prediction.shape)
     flow_viz = visualize_flow(flow_prediction)
 
     cv2.imshow("flow", flow_viz)
