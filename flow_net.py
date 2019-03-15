@@ -252,8 +252,7 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
     print(gt_flow)
     print(flow_prediction[0].shape)
     flow_viz = visualize_flow(flow_prediction[0] * 10)
-    print(read_flow(gt_flow))
-    print(tf.reduce_mean(tf.norm(flow_prediction - read_flow(gt_flow), axis=3)))
+    print(np.mean(np.linalg.norm(flow_prediction - read_flow(gt_flow), axis=3, ord=2)))
     print("Epe error: {}".format(tf.reduce_mean(tf.norm(flow_prediction - read_flow(gt_flow), axis=3))))
 
     # cv2.imshow("flow", flow_viz)
