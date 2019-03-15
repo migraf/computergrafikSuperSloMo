@@ -47,21 +47,19 @@ def read_flow(flow_path):
             return data2D
 
 def visualize_flow(flow):
-        print("initial flow shape")
-        print(flow.shape)
-        h, w = flow.shape[-2:]
-        fx, fy = flow[:, :, 0], flow[:, :, 1]
-        print(fx.shape)
-        print(fy.shape)
-        ang = np.arctan2(fy, fx) + np.pi
-
-        v = np.sqrt(fx * fx + fy * fy)
-        hsv = np.zeros((h, w, 3), np.uint8)
-        hsv[..., 0] = ang * (180 / np.pi / 2)
-        hsv[..., 1] = 255
-        hsv[..., 2] = np.minimum(v * 4, 255)
-        bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-        return bgr
+    flow = np.squeeze(flow, axis=0)
+    h, w = flow.shape[:2]
+    fx, fy = flow[:, :, 0], flow[:, :, 1]
+    ang = np.arctan2(fy, fx) + np.pi
+    print("Flow shape:")
+    print(flow.shape)
+    v = np.sqrt(fx * fx + fy * fy)
+    hsv = np.zeros((h, w, 3), np.uint8)
+    hsv[..., 0] = ang * (180 / np.pi / 2)
+    hsv[..., 1] = 255
+    hsv[..., 2] = np.minimum(v * 4, 255)
+    bgr = cv.cvtColor(hsv, cv.COLOR_HSV2BGR)
+    return bgr
 
 
 class FlownetDataflow(DataFlow):
