@@ -241,7 +241,7 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
     print(flow_prediction[0].shape)
     flow_viz = visualize_flow(flow_prediction[0])
 
-    cv2.imshow("flow", flow_viz)
+    # cv2.imshow("flow", flow_viz)
     cv2.imwrite('flow.png', flow_viz)
 
     cv2.waitKey(0)
