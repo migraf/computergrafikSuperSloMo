@@ -252,7 +252,7 @@ if __name__ == "__main__":
 
 
     if args.test:
-        test_paths = np.load("/graphics/scratch/students/graf/computergrafikSuperSloMo/train_paths.npy")
+        test_paths = np.load("/graphics/scratch/students/graf/computergrafikSuperSloMo/test_paths.npy")
         print(test_paths[:5])
 
     else:
