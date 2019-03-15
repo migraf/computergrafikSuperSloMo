@@ -51,6 +51,8 @@ def visualize_flow(flow):
         print(flow.shape)
         h, w = flow.shape[-2:]
         fx, fy = flow[:, :, :, 0], flow[:, :, 1]
+        print(fx.shape)
+        print(fy.shape)
         ang = np.arctan2(fy, fx) + np.pi
 
         v = np.sqrt(fx * fx + fy * fy)
