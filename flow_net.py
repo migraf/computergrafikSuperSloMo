@@ -224,6 +224,8 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
     left_image = np.expand_dims(cv2.imread(left_image_path),0)
     right_image = np.expand_dims(cv2.imread(right_image_path), 0)
 
+    gt_flow = visualize_flow(gt_flow)
+
     height = left_image.shape[1]
     width = left_image.shape[2]
 
@@ -240,6 +242,8 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
 
     print(flow_prediction[0].shape)
     flow_viz = visualize_flow(flow_prediction[0] * 10)
+
+    print("Epe error: {}".format(tf.norm(flow_prediction - gt_flow, axis=3)))
     print("Max flow predict : {}".format(np.max(flow_viz)))
     print("Min flow predict : {}".format(np.min(flow_viz)))
 
@@ -272,7 +276,7 @@ if __name__ == "__main__":
         test_paths = np.load("/graphics/scratch/students/graf/computergrafikSuperSloMo/test_paths.npy")
         model_path = "/graphics/scratch/students/graf/computergrafikSuperSloMo/train_log/flow_net01/model-91485.data-00000-of-00001"
 
-        inference(model_path, test_paths[0,0], test_paths[0,1])
+        inference(model_path, test_paths[0,0], test_paths[0,1], test_paths[0,2])
 
     else:
         logger.auto_set_dir()
