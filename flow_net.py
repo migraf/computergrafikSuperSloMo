@@ -224,8 +224,6 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
     left_image = np.expand_dims(cv2.imread(left_image_path),0)
     right_image = np.expand_dims(cv2.imread(right_image_path), 0)
 
-    gt_flow = visualize_flow(gt_flow)
-
     height = left_image.shape[1]
     width = left_image.shape[2]
 
@@ -243,7 +241,7 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
     print(flow_prediction[0].shape)
     flow_viz = visualize_flow(flow_prediction[0] * 10)
 
-    print("Epe error: {}".format(tf.norm(flow_prediction - gt_flow, axis=3)))
+    print("Epe error: {}".format(tf.norm(flow_prediction - read_flow(gt_flow), axis=3)))
     print("Max flow predict : {}".format(np.max(flow_viz)))
     print("Min flow predict : {}".format(np.min(flow_viz)))
 
