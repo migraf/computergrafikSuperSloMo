@@ -221,6 +221,11 @@ class FlowNetModel(ModelDesc):
 
 
 def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
+
+
+    print(left_image_path)
+    print(right_image_path)
+    print(gt_flow)
     left_image = np.expand_dims(cv2.imread(left_image_path),0)
     right_image = np.expand_dims(cv2.imread(right_image_path), 0)
 
