@@ -224,9 +224,12 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
     left_image = cv2.imread(left_image_path)
     right_image = cv2.imread(right_image_path)
 
+    height = left_image.shape[0]
+    width = left_image.shape[1]
+
 
     predict_config = PredictConfig(
-        model = FlowNetModel(),
+        model = FlowNetModel("test_model", height, width, 1),
         session_init=get_model_loader(saved_model),
         input_names=["left_image", "right_image"],
         output_names=["final_prediction"])
