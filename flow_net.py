@@ -224,8 +224,8 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
     left_image = np.expand_dims(cv2.imread(left_image_path),0)
     right_image = np.expand_dims(cv2.imread(right_image_path), 0)
 
-    height = left_image.shape[0]
-    width = left_image.shape[1]
+    height = left_image.shape[1]
+    width = left_image.shape[2]
 
 
     predict_config = PredictConfig(
