@@ -220,7 +220,7 @@ class FlowNetModel(ModelDesc):
 
 
 
-def inference(saved_model, left_image_path, right_image_path, gt_flow):
+def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
     left_image = cv2.imread(left_image_path)
     right_image = cv2.imread(right_image_path)
 
@@ -232,6 +232,15 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow):
         output_names=["final_prediction"])
 
     predictor = OfflinePredictor(predict_config)
+
+    flow_prediction = predictor(left_image, right_image)
+
+    flow_viz = visualize_flow(flow_prediction)
+
+    cv2.imshow("flow", flow_viz)
+    cv2.imwrite('flow.png', flow_viz)
+
+    cv2.waitKey(0)
 
 
     
@@ -253,6 +262,9 @@ if __name__ == "__main__":
 
     if args.test:
         test_paths = np.load("/graphics/scratch/students/graf/computergrafikSuperSloMo/test_paths.npy")
+        model_path = "/graphics/scratch/students/graf/computergrafikSuperSloMo/train_log/flow_net01/model-91485.data-00000-of-00001"
+
+        inference(model_path, test_paths[0,0], test_paths[0,1])
         print(test_paths[:,:5])
 
     else:
