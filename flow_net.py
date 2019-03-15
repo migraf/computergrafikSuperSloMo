@@ -276,7 +276,7 @@ if __name__ == "__main__":
         test_paths = np.load("/graphics/scratch/students/graf/computergrafikSuperSloMo/test_paths.npy")
         model_path = "/graphics/scratch/students/graf/computergrafikSuperSloMo/train_log/flow_net01/model-91485.data-00000-of-00001"
 
-        inference(model_path, test_paths[0, 0], test_paths[0, 1], test_paths[0, 2])
+        inference(model_path, test_paths[0, 0], test_paths[1, 0], test_paths[2, 0])
 
     else:
         logger.auto_set_dir()
