@@ -236,11 +236,11 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
 
     predictor = OfflinePredictor(predict_config)
 
-    flow_prediction = predictor(left_image, right_image) * 10
+    flow_prediction = predictor(left_image, right_image)
     print("Max flow predict : {}".format(np.max(flow_prediction)))
     print("Min flow predict : {}".format(np.min(flow_prediction)))
     print(flow_prediction[0].shape)
-    flow_viz = visualize_flow(flow_prediction[0])
+    flow_viz = visualize_flow(flow_prediction[0] * 10)
 
     print(np.max(flow_viz))
 
