@@ -249,13 +249,13 @@ def inference(saved_model, left_image_path, right_image_path, gt_flow=None):
     predictor = OfflinePredictor(predict_config)
 
     flow_prediction = predictor(left_image, right_image)
-    flow_viz = visualize_flow(flow_prediction[0] * 10)
+    flow_viz = visualize_flow(flow_prediction[0])
     print("max flow value: {}".format(np.max(flow_viz)))
     print(np.mean(np.linalg.norm(flow_prediction - read_flow(gt_flow), axis=3, ord=2)))
     print("Epe error: {}".format(tf.reduce_mean(tf.norm(flow_prediction - read_flow(gt_flow), axis=3))))
 
     # cv2.imshow("flow", flow_viz)
-    cv2.imwrite('flow.png', flow_viz)
+    cv2.imwrite('flow.png', flow_viz * 255)
 
     cv2.waitKey(0)
 
